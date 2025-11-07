@@ -1,0 +1,6 @@
+Entregar solo un .py.
+
+Recomendacion hacer funciones que se puedan usar para diferentes parametros.
+
+Para sacar nota en la tarea 3, habra que probar distintos valores en patience, val_loss, etc. El resultado final imprimire una grafica, y mirare quien consegi mejor tasa de acierto. Pero alomejor una hace mejor tasa de acierto pero tarda mas, entonces hay que ver cual conviene mas
+
