@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import logging
 import os
 
+import keras
+from keras import layers
+from keras import ops
+
 # Funciones auxiliares para visualizar los resultados de los modelos entrenados
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import time  # Para medir el tiempo de entrenamiento
@@ -13,7 +17,7 @@ import time  # Para medir el tiempo de entrenamiento
 # =============================================================================
 # 1. CONFIGURACIÓN GLOBAL
 # =============================================================================
-# Configuración para ocultar mensajes de advertencia de TensorFlow
+# Configuracion para ocultar mensajes de advertencia de TensorFlow
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -44,9 +48,11 @@ def cargar_y_preprocesar_cifar10_mlp():
     """
     (X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
 
+    # Escala las imagenes a [0, 1]
     X_train = X_train.astype("float32") / 255.0
     X_test = X_test.astype("float32") / 255.0
 
+    # Aplana las imagenes a un vector de 3072
     num_pixels = X_train.shape[1] * X_train.shape[2] * X_train.shape[3]
     X_train = X_train.reshape(X_train.shape[0], num_pixels)
     X_test = X_test.reshape(X_test.shape[0], num_pixels)
@@ -188,16 +194,133 @@ def tarea_toma_de_contacto():
         show_image(X_train[i], title)
 
 
+# TAREA 1: Definir, entrenar y evaluar un MLP con Keras
 def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     """
-
+    Define, entrena y evalia un MLP basico que sigue el enunciado de la tarea 1
 
     Args:
-        X_train (_type_): _description_
-        Y_train (_type_): _description_
-        X_test (_type_): _description_
-        Y_test (_type_): _description_
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
     """
+    print("--- Ejecutando Tarea: MLP1 ---")
+
+    # --- Definir arquitectura del modelo
+    model = keras.Sequential()
+
+    # Capa de entrada
+    model.add(keras.Input(shape=(X_train.shape[1],)))
+    # Capa Oculta: Dense, 48 neruonas y activacion sigmoid
+    model.add(layers.Dense(48, activation="sigmoid"))
+    # Capa de Salida: Dense, 10 neruonas y activacion softmax
+    # softmax convierte las salidas en un vector de probabilidades
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    # --- Compilar Modelo
+    model.compile(
+        optimizer="adam",  # Optimizador adam
+        loss="categorical_crossentropy",  # FUncion de perdida para la clasificacion
+        metrics=["accuracy"],  # Metrica de evaluacion
+    )
+
+    # --- Resumen del modelo
+    print("\n--- Resumen del modelo ---")
+    model.summary()
+
+    # --- Entrenar el modelo
+    print("\n--- Entrenando el modelo ---")
+    start_time = time.time()
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=10,  # Numero de veces que se recorre el dataset entero
+        batch_size=32,  # Numero de lote
+        validation_split=0.1,  # 10% de los datos de entrenamiento se usaran para la validacion
+    )
+    end_time = time.time()
+    training_time = end_time - start_time
+    print("Tiempo de entrenamiento:", training_time, "segundos")
+
+    # --- Visualizar Evolucion del entrenamiento
+    show_train_evolution(history, "Evolución del entrenamiento MLP1")
+
+    # --- Evaluar modelo con el conjunto de Test
+    print("\n--- Evaluando el modelo con el conjunto de Test ---")
+    test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+    print("Perdida en el conjunto de Test:", test_loss)
+    print("Precisión en el conjunto de Test:", test_accuracy)
+
+
+# TAREA 2: Ajustar el valor del parámetro epochs
+def tarea_mlp2(X_train, Y_train, X_test, Y_test):
+    """
+    Analizar el efecto del numero de epocas y utilizar EarlyStopping
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP2 ---")
+
+    # --- Definir arquitectura del modelo, igual que en mlp1
+    model = keras.Sequential()
+    model.add(keras.Input(shape=(X_train.shape[1],)))
+    model.add(layers.Dense(48, activation="sigmoid"))
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+
+    # --- Entrenar el modelo con 100 epocas, sin EarlyStopping
+    print("\n--- Entrenando el modelo con 100 epocas ---")
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=35,
+        batch_size=32,
+        validation_split=0.1,
+    )
+
+    # --- Configurar el callback EarlyStopping
+    # print("\n--- Configurando el callback EarlyStopping ---")
+    # early_stopping = keras.callbacks.EarlyStopping(
+    #     monitor="val_loss",  # monitorea la perdida en el conjunto de validacion
+    #     patience=10,  # esperara 10 epocas sin mejora antes de parar
+    #     restore_best_weights=True,  # asegura quedarse con el mejor modelo
+    #     verbose=1,  # imprime un mensaje cuando para
+    # )
+
+    # --- Entrenar el modelo con 100 epocas, EarlyStopping decide cuando parar
+    # print("\n--- Entrenando el modelo con 100 epocas y EarlyStopping ---")
+    # history = model.fit(
+    #     X_train,
+    #     Y_train,
+    #     epochs=100,
+    #     batch_size=32,
+    #     validation_split=0.1,
+    #     callbacks=[early_stopping],
+    #     verbose=1,
+    # )
+
+    # -- Visualización y evaluacion
+    # print(
+    #     "\nEl entrenamiento se ha detenido en la epoca:", early_stopping.stopped_epoch
+    # )
+
+    show_train_evolution(history, "Evolución del entrenamiento MLP2")
+
+    print("\n--- Evaluando el modelo con el conjunto de Test ---")
+    test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+    print("Perdida en el conjunto de Test:", test_loss)
+    print("Precisión en el conjunto de Test:", test_accuracy)
 
 
 # =============================================================================
@@ -206,14 +329,17 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
 if __name__ == "__main__":
     # --- Tarea: Toma de contacto ---
     # Descomenta la siguiente línea para ejecutar el código de la sección 2
-    tarea_toma_de_contacto()
+    # tarea_toma_de_contacto()
 
     # --- Carga de datos para los modelos ---
-    # Este paso es común para todas las tareas de MLP
     print("Cargando y preprocesando datos para MLP...")
-    X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp = (cargar_y_preprocesar_cifar10_mlp())
+    X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp = (
+        cargar_y_preprocesar_cifar10_mlp()
+    )
     print("Datos para MLP cargados y listos.")
 
-
     # Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
-    #tarea_mlp1(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp1(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    # Tarea MLP2: Ajustar el valor del parámetro epochs
+    tarea_mlp2(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
