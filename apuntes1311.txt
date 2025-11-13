@@ -1,0 +1,5 @@
+Apuntes sobre la tarea 2.
+
+El profesor dice que cree varias historys de cada modelo, porque si no es un poco aleatorio. No dice que me quede con el promedio de los history, sino con algo sobre la grafica para que no quede tan 'rayada(con subidas y bajadas rapidas)'.
+
+Con la tarea 3 crear  de 3 a 5 modelos con el early stopping, y con batch size no mayores a 1000. y con el evaluate de cada modelo construir un grafico de barras, con el batch_size en el eje x, y en el eje y a la izquierda el tiempo, y a la derecha del eje y el accurazy en %.
