@@ -283,36 +283,36 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test):
     history = model.fit(
         X_train,
         Y_train,
-        epochs=35,
+        epochs=100,
         batch_size=32,
         validation_split=0.1,
     )
 
     # --- Configurar el callback EarlyStopping
-    # print("\n--- Configurando el callback EarlyStopping ---")
-    # early_stopping = keras.callbacks.EarlyStopping(
-    #     monitor="val_loss",  # monitorea la perdida en el conjunto de validacion
-    #     patience=10,  # esperara 10 epocas sin mejora antes de parar
-    #     restore_best_weights=True,  # asegura quedarse con el mejor modelo
-    #     verbose=1,  # imprime un mensaje cuando para
-    # )
+    print("\n--- Configurando el callback EarlyStopping ---")
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",  # monitorea la perdida en el conjunto de validacion
+        patience=10,  # esperara 10 epocas sin mejora antes de parar
+        restore_best_weights=True,  # asegura quedarse con el mejor modelo
+        verbose=1,  # imprime un mensaje cuando para
+    )
 
     # --- Entrenar el modelo con 100 epocas, EarlyStopping decide cuando parar
-    # print("\n--- Entrenando el modelo con 100 epocas y EarlyStopping ---")
-    # history = model.fit(
-    #     X_train,
-    #     Y_train,
-    #     epochs=100,
-    #     batch_size=32,
-    #     validation_split=0.1,
-    #     callbacks=[early_stopping],
-    #     verbose=1,
-    # )
+    print("\n--- Entrenando el modelo con 100 epocas y EarlyStopping ---")
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=100,
+        batch_size=32,
+        validation_split=0.1,
+        callbacks=[early_stopping],
+        verbose=1,
+    )
 
     # -- Visualización y evaluacion
-    # print(
-    #     "\nEl entrenamiento se ha detenido en la epoca:", early_stopping.stopped_epoch
-    # )
+    print(
+        "\nEl entrenamiento se ha detenido en la epoca:", early_stopping.stopped_epoch
+    )
 
     show_train_evolution(history, "Evolución del entrenamiento MLP2")
 
