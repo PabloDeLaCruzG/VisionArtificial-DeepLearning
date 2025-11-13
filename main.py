@@ -52,11 +52,6 @@ def cargar_y_preprocesar_cifar10_mlp():
     X_train = X_train.astype("float32") / 255.0
     X_test = X_test.astype("float32") / 255.0
 
-    # Aplana las imagenes a un vector de 3072
-    num_pixels = X_train.shape[1] * X_train.shape[2] * X_train.shape[3]
-    X_train = X_train.reshape(X_train.shape[0], num_pixels)
-    X_test = X_test.reshape(X_test.shape[0], num_pixels)
-
     Y_train = keras.utils.to_categorical(Y_train, len(CLASS_NAMES))
     Y_test = keras.utils.to_categorical(Y_test, len(CLASS_NAMES))
 
@@ -99,6 +94,75 @@ def show_train_evolution(history, title="Evolución del entrenamiento"):
     ax2.set_title("Perdida por Epoca")
     ax2.set_xlabel("Epochs")
     ax2.set_ylabel("Loss")
+    ax2.legend()
+
+    plt.show()
+
+
+def show_avg_evolution(
+    histories, title="Evolución Promediada del Entrenamiento"
+):
+    """
+    Muestra la evolución promediada de la precisión y la pérdida de varias
+    ejecuciones, incluyendo la desviación estándar.
+
+    Args:
+        histories (list): Lista de objetos 'history.history' de Keras.
+        title (str): Título principal para la figura.
+    """
+    # Extraer métricas de todas las histories
+    accs = np.array([h["accuracy"] for h in histories])
+    val_accs = np.array([h["val_accuracy"] for h in histories])
+    losses = np.array([h["loss"] for h in histories])
+    val_losses = np.array([h["val_loss"] for h in histories])
+
+    # Calcular promedio y desviación estándar a lo largo de las ejecuciones (axis=0)
+    mean_acc, std_acc = np.mean(accs, axis=0), np.std(accs, axis=0)
+    mean_val_acc, std_val_acc = np.mean(val_accs, axis=0), np.std(val_accs, axis=0)
+    mean_loss, std_loss = np.mean(losses, axis=0), np.std(losses, axis=0)
+    mean_val_loss, std_val_loss = np.mean(val_losses, axis=0), np.std(
+        val_losses, axis=0
+    )
+
+    epochs = range(1, len(mean_acc) + 1)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(17, 6))
+    fig.suptitle(title, fontsize=16)
+
+    # Gráfica de Precisión (Accuracy)
+    ax1.plot(epochs, mean_acc, "b", label="Precisión Entrenamiento (Promedio)")
+    ax1.fill_between(
+        epochs, mean_acc - std_acc, mean_acc + std_acc, color="b", alpha=0.2
+    )
+    ax1.plot(epochs, mean_val_acc, "r", label="Precisión Validación (Promedio)")
+    ax1.fill_between(
+        epochs,
+        mean_val_acc - std_val_acc,
+        mean_val_acc + std_val_acc,
+        color="r",
+        alpha=0.2,
+    )
+    ax1.set_title("Precisión Promedio por Época")
+    ax1.set_xlabel("Época")
+    ax1.set_ylabel("Precisión")
+    ax1.legend()
+
+    # Gráfica de Pérdida (Loss)
+    ax2.plot(epochs, mean_loss, "b", label="Pérdida Entrenamiento (Promedio)")
+    ax2.fill_between(
+        epochs, mean_loss - std_loss, mean_loss + std_loss, color="b", alpha=0.2
+    )
+    ax2.plot(epochs, mean_val_loss, "r", label="Pérdida Validación (Promedio)")
+    ax2.fill_between(
+        epochs,
+        mean_val_loss - std_val_loss,
+        mean_val_loss + std_val_loss,
+        color="r",
+        alpha=0.2,
+    )
+    ax2.set_title("Pérdida Promedio por Época")
+    ax2.set_xlabel("Época")
+    ax2.set_ylabel("Pérdida")
     ax2.legend()
 
     plt.show()
@@ -178,7 +242,7 @@ def show_confusion_matriz(Y_true, Y_pred, class_names, title="Matriz de Confusi�
 # =============================================================================
 # 4. FUNCIONES DE LAS TAREAS DE LA PRÁCTICA
 # =============================================================================
-def tarea_toma_de_contacto():
+def tarea_test():
     """
     Código para la sección 2 de la práctica: Cargar, imprimir dimensiones
     y mostrar ejemplos de CIFAR-10.
@@ -211,7 +275,9 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     model = keras.Sequential()
 
     # Capa de entrada
-    model.add(keras.Input(shape=(X_train.shape[1],)))
+    model.add(keras.Input(shape=X_train[0].shape))
+    # Aplanar
+    model.add(layers.Flatten())
     # Capa Oculta: Dense, 48 neruonas y activacion sigmoid
     model.add(layers.Dense(48, activation="sigmoid"))
     # Capa de Salida: Dense, 10 neruonas y activacion softmax
@@ -254,9 +320,11 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
 
 
 # TAREA 2: Ajustar el valor del parámetro epochs
-def tarea_mlp2(X_train, Y_train, X_test, Y_test):
+def tarea_mlp2(X_train, Y_train, X_test, Y_test, n_repeticiones=5):
     """
-    Analizar el efecto del numero de epocas y utilizar EarlyStopping
+    Analizar el efecto del numero de epocas y utilizar EarlyStopping.
+    Realiza N ejecuciones del entrenamiento para obtener una visión promediada
+    y más robusta del rendimiento del modelo.
 
     Args:
         X_train: Datos de entrenamiento
@@ -266,9 +334,104 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test):
     """
     print("--- Ejecutando Tarea: MLP2 ---")
 
-    # --- Definir arquitectura del modelo, igual que en mlp1
+    histories = []
+    test_losses = []
+    test_accuracies = []
+
+    for i in range(n_repeticiones):
+
+        # --- Definir arquitectura del modelo, igual que en mlp1
+        model = keras.Sequential()
+        model.add(keras.Input(shape=X_train[0].shape))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(48, activation="sigmoid"))
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer="adam",
+            loss="categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        # --- Entrenar el modelo con 100 epocas, sin EarlyStopping
+        # print("\n--- Entrenando el modelo con 100 epocas ---")
+        # history = model.fit(
+        #     X_train,
+        #     Y_train,
+        #     epochs=35,
+        #     batch_size=32,
+        #     validation_split=0.1,
+        # )
+
+        # --- Configurar el callback EarlyStopping
+        print("\n--- Configurando el callback EarlyStopping ---")
+        early_stopping = keras.callbacks.EarlyStopping(
+            monitor="val_loss",  # monitorea la perdida en el conjunto de validacion
+            patience=10,  # esperara 10 epocas sin mejora antes de parar
+            restore_best_weights=True,  # asegura quedarse con el mejor modelo
+            verbose=1,  # imprime un mensaje cuando para
+        )
+
+        # --- Entrenar el modelo con 100 epocas, EarlyStopping decide cuando parar
+        print("\n--- Entrenando el modelo con 100 epocas y EarlyStopping ---")
+        history = model.fit(
+            X_train,
+            Y_train,
+            epochs=100,
+            batch_size=32,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=1,
+        )
+
+        # -- Visualización y evaluacion
+        print(
+            "\nEl entrenamiento se ha detenido en la epoca:",
+            early_stopping.stopped_epoch,
+        )
+
+        print(f"Evaluando modelo de la repetición {i+1}...")
+        loss, acc = model.evaluate(X_test, Y_test, verbose=0)
+        test_losses.append(loss)
+        test_accuracies.append(acc)
+
+        # 3. Guardar el historial
+        histories.append(history.history)
+        print(f"Repetición {i+1} finalizada. Test Accuracy: {acc*100:.2f}%")
+
+    # 4. Visualizar los resultados promediados del entrenamiento
+    print("\nGenerando gráfica promediada de las ejecuciones...")
+    show_avg_evolution(histories)
+
+    # --- Calcular y mostrar los resultados promediados de la evaluación ---
+    mean_test_acc = np.mean(test_accuracies)
+    std_test_acc = np.std(test_accuracies)
+    mean_test_loss = np.mean(test_losses)
+    std_test_loss = np.std(test_losses)
+
+    print("\n--- Resultados Finales Promediados en el Conjunto de Test ---")
+    print(
+        f"Precisión (Accuracy) Promedio: {mean_test_acc*100:.2f}% (± {std_test_acc*100:.2f}%)"
+    )
+    print(f"Pérdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
+    print("=" * 60)
+
+
+def tarea_mlp3(X_train, Y_train, X_test, Y_test):
+    """
+    Analizar el efecto de la cantidad definida del batch_size
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP3 ---")
+
     model = keras.Sequential()
-    model.add(keras.Input(shape=(X_train.shape[1],)))
+    model.add(keras.Input(shape=X_train[0].shape))
+    model.add(layers.Flatten())
     model.add(layers.Dense(48, activation="sigmoid"))
     model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
 
@@ -278,27 +441,15 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test):
         metrics=["accuracy"],
     )
 
-    # --- Entrenar el modelo con 100 epocas, sin EarlyStopping
-    print("\n--- Entrenando el modelo con 100 epocas ---")
-    history = model.fit(
-        X_train,
-        Y_train,
-        epochs=100,
-        batch_size=32,
-        validation_split=0.1,
-    )
-
-    # --- Configurar el callback EarlyStopping
-    print("\n--- Configurando el callback EarlyStopping ---")
+    # Configuracion del EarlyStopping
     early_stopping = keras.callbacks.EarlyStopping(
-        monitor="val_loss",  # monitorea la perdida en el conjunto de validacion
-        patience=10,  # esperara 10 epocas sin mejora antes de parar
-        restore_best_weights=True,  # asegura quedarse con el mejor modelo
-        verbose=1,  # imprime un mensaje cuando para
+        monitor="val_loss",
+        patience=10,
+        restore_best_weights=True,
+        verbose=1,
     )
 
-    # --- Entrenar el modelo con 100 epocas, EarlyStopping decide cuando parar
-    print("\n--- Entrenando el modelo con 100 epocas y EarlyStopping ---")
+    print("\n Entrenando modelo con batch_size=32")
     history = model.fit(
         X_train,
         Y_train,
@@ -309,14 +460,11 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test):
         verbose=1,
     )
 
-    # -- Visualización y evaluacion
-    print(
-        "\nEl entrenamiento se ha detenido en la epoca:", early_stopping.stopped_epoch
-    )
+    print("\n Entrenamiento detenido en epoca: ", early_stopping.stopped_epoch)
 
-    show_train_evolution(history, "Evolución del entrenamiento MLP2")
+    show_train_evolution(history, "Evolución del entrenamiento MLP3")
 
-    print("\n--- Evaluando el modelo con el conjunto de Test ---")
+    print("\n Evaluando el modelo con el conjunto de Test")
     test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
 
     print("Perdida en el conjunto de Test:", test_loss)
@@ -327,9 +475,7 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test):
 # 5. BLOQUE DE EJECUCIÓN PRINCIPAL
 # =============================================================================
 if __name__ == "__main__":
-    # --- Tarea: Toma de contacto ---
-    # Descomenta la siguiente línea para ejecutar el código de la sección 2
-    # tarea_toma_de_contacto()
+    # tarea_test()
 
     # --- Carga de datos para los modelos ---
     print("Cargando y preprocesando datos para MLP...")
