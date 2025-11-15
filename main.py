@@ -320,11 +320,11 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
 
 
 # TAREA 2: Ajustar el valor del parámetro epochs
-def tarea_mlp2(X_train, Y_train, X_test, Y_test, n_repeticiones=5):
+def tarea_mlp2_ajuste_manual(X_train, Y_train, X_test, Y_test, n_repeticiones=5, epochs=80):
     """
-    Analizar el efecto del numero de epocas y utilizar EarlyStopping.
-    Realiza N ejecuciones del entrenamiento para obtener una visión promediada
-    y más robusta del rendimiento del modelo.
+    Realiza N ejecuciones con un número fijo de épocas para
+    analizar el comportamiento promedio del modelo y detectar visualmente el
+    sobreentrenamiento.
 
     Args:
         X_train: Datos de entrenamiento
@@ -339,6 +339,7 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test, n_repeticiones=5):
     test_accuracies = []
 
     for i in range(n_repeticiones):
+        print(f"\n--- Ejecutando repetición {i+1}/{n_repeticiones} ---")
 
         # --- Definir arquitectura del modelo, igual que en mlp1
         model = keras.Sequential()
@@ -353,41 +354,14 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test, n_repeticiones=5):
             metrics=["accuracy"],
         )
 
-        # --- Entrenar el modelo con 100 epocas, sin EarlyStopping
-        # print("\n--- Entrenando el modelo con 100 epocas ---")
-        # history = model.fit(
-        #     X_train,
-        #     Y_train,
-        #     epochs=35,
-        #     batch_size=32,
-        #     validation_split=0.1,
-        # )
-
-        # --- Configurar el callback EarlyStopping
-        print("\n--- Configurando el callback EarlyStopping ---")
-        early_stopping = keras.callbacks.EarlyStopping(
-            monitor="val_loss",  # monitorea la perdida en el conjunto de validacion
-            patience=10,  # esperara 10 epocas sin mejora antes de parar
-            restore_best_weights=True,  # asegura quedarse con el mejor modelo
-            verbose=1,  # imprime un mensaje cuando para
-        )
-
-        # --- Entrenar el modelo con 100 epocas, EarlyStopping decide cuando parar
-        print("\n--- Entrenando el modelo con 100 epocas y EarlyStopping ---")
+        # --- Entrenar el modelo con 80 epocas, sin EarlyStopping
+        print("\n--- Entrenando el modelo con 100 epocas ---")
         history = model.fit(
             X_train,
             Y_train,
-            epochs=100,
+            epochs=epochs,
             batch_size=32,
             validation_split=0.1,
-            callbacks=[early_stopping],
-            verbose=1,
-        )
-
-        # -- Visualización y evaluacion
-        print(
-            "\nEl entrenamiento se ha detenido en la epoca:",
-            early_stopping.stopped_epoch,
         )
 
         print(f"Evaluando modelo de la repetición {i+1}...")
@@ -401,7 +375,7 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test, n_repeticiones=5):
 
     # 4. Visualizar los resultados promediados del entrenamiento
     print("\nGenerando gráfica promediada de las ejecuciones...")
-    show_avg_evolution(histories)
+    show_avg_evolution(histories, "Evolución Promedio del Entrenamiento (100 Épocas)")
 
     # --- Calcular y mostrar los resultados promediados de la evaluación ---
     mean_test_acc = np.mean(test_accuracies)
@@ -416,6 +390,60 @@ def tarea_mlp2(X_train, Y_train, X_test, Y_test, n_repeticiones=5):
     print(f"Pérdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
     print("=" * 60)
 
+def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
+    """
+    Realiza UNA ejecución utilizando el callback EarlyStopping
+    para demostrar su efectividad en detener el entrenamiento automáticamente.
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+
+    print("\n--- Ejecutando Tarea MLP2 - EarlyStopping ---")
+
+    model = keras.Sequential()
+    model.add(keras.Input(shape=X_train[0].shape))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(48, activation="sigmoid"))
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=10,
+        restore_best_weights=True,
+        verbose=1,
+    )
+
+    print("\nIniciando entrenamiento con EarlyStopping 80 epocas")
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=80,
+        batch_size=32,
+        validation_split=0.1,
+        callbacks=[early_stopping],
+        verbose=1
+    )
+
+    print("\nVisualizando evolucion con EarlyStopping")
+    show_train_evolution(history, "Evolucion del entrenamiento con EarlyStopping")
+
+    print("\nEvaluando el modelo con el conjunto de Test")
+    test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+    print("Perdida en el conjunto de Test:", test_loss)
+    print("Precisión en el conjunto de Test:", test_accuracy)
+
+    
 
 def tarea_mlp3(X_train, Y_train, X_test, Y_test):
     """
@@ -488,4 +516,8 @@ if __name__ == "__main__":
     # tarea_mlp1(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     # Tarea MLP2: Ajustar el valor del parámetro epochs
-    tarea_mlp2(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    # Ajuste manual de epocas
+    #tarea_mlp2_ajuste_manual(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # EarlyStopping
+    tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
