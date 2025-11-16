@@ -518,6 +518,104 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
     )
 
 
+# TAREA 4: Probar diferentes funciones de activación
+def tarea_mlp4(X_train, Y_train, X_test, Y_test):
+    """
+    Compara el rendimiento de diferentes combinaciones de funciones de
+    activacion y inicializadores de pesos.
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP4 ---")
+
+    # Configuraciones para comparar
+    configs = [
+        {
+            "activation": "sigmoid",
+            "initializer": "glorot_uniform",
+            "name": "Sigmoid con Glorot",
+        },
+        {"activation": "relu", "initializer": "he_normal", "name": "ReLU con He"},
+        {
+            "activation": "leaky_relu",
+            "initializer": "he_normal",
+            "name": "Leaky ReLU con He",
+        },
+    ]
+
+    # Listas para guardar los resultados
+    accuracy_results = []
+    time_results = []
+    model_names = []
+
+    for conf in configs:
+        print("\nEntrenamiento con configuracion:", conf["name"])
+
+        model = keras.Sequential()
+        model.add(layers.Input(shape=X_train[0].shape))
+        model.add(layers.Flatten())
+        model.add(
+            layers.Dense(
+                48,
+                activation=conf["activation"],
+                kernel_initializer=conf["initializer"],
+            )
+        )
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer='adam',
+            loss='categorical_crossentropy',
+            metrics=['accuracy']
+        )
+
+        early_stopping_callback = keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=10,
+            restore_best_weights=True,
+            verbose=1
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train,
+            Y_train,
+            epochs=100,
+            batch_size=512,
+            validation_split=0.1,
+            callbacks=[early_stopping_callback],
+            verbose=0
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+        model_names.append(conf["name"])
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    # Grafica comparativa
+    print("\nGrafica comparativa")
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por Funcion de Activacion",
+    )
+
+
+
+
+
 # =============================================================================
 # 5. BLOQUE DE EJECUCIÓN PRINCIPAL
 # =============================================================================
@@ -538,7 +636,10 @@ if __name__ == "__main__":
     # Ajuste manual de epocas
     # tarea_mlp2_ajuste_manual(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
     # EarlyStopping
-    #tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP3: Ajustar el valor de 'batch_size'
-    tarea_mlp3(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp3(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    ### Tarea MLP4: Probar diferentes funciones de activación
+    tarea_mlp4(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
