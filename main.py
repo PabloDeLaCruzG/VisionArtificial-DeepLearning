@@ -99,9 +99,7 @@ def show_train_evolution(history, title="Evolución del entrenamiento"):
     plt.show()
 
 
-def show_avg_evolution(
-    histories, title="Evolución Promediada del Entrenamiento"
-):
+def show_avg_evolution(histories, title="Evolución Promediada del Entrenamiento"):
     """
     Muestra la evolución promediada de la precisión y la pérdida de varias
     ejecuciones, incluyendo la desviación estándar.
@@ -319,8 +317,10 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     print("Precisión en el conjunto de Test:", test_accuracy)
 
 
-# TAREA 2: Ajustar el valor del parámetro epochs
-def tarea_mlp2_ajuste_manual(X_train, Y_train, X_test, Y_test, n_repeticiones=5, epochs=80):
+# TAREA 2_1: Ajustar el valor del parámetro epochs
+def tarea_mlp2_ajuste_manual(
+    X_train, Y_train, X_test, Y_test, n_repeticiones=5, epochs=80
+):
     """
     Realiza N ejecuciones con un número fijo de épocas para
     analizar el comportamiento promedio del modelo y detectar visualmente el
@@ -390,6 +390,8 @@ def tarea_mlp2_ajuste_manual(X_train, Y_train, X_test, Y_test, n_repeticiones=5,
     print(f"Pérdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
     print("=" * 60)
 
+
+# TAREA 2_": Ajustar el valor de epochs usando callback EarlyStopping
 def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
     """
     Realiza UNA ejecución utilizando el callback EarlyStopping
@@ -431,7 +433,7 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
         batch_size=32,
         validation_split=0.1,
         callbacks=[early_stopping],
-        verbose=1
+        verbose=1,
     )
 
     print("\nVisualizando evolucion con EarlyStopping")
@@ -443,8 +445,8 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
     print("Perdida en el conjunto de Test:", test_loss)
     print("Precisión en el conjunto de Test:", test_accuracy)
 
-    
 
+# TAREA 3: Ajustar el valor de 'batch_size'
 def tarea_mlp3(X_train, Y_train, X_test, Y_test):
     """
     Analizar el efecto de la cantidad definida del batch_size
@@ -457,46 +459,63 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
     """
     print("--- Ejecutando Tarea: MLP3 ---")
 
-    model = keras.Sequential()
-    model.add(keras.Input(shape=X_train[0].shape))
-    model.add(layers.Flatten())
-    model.add(layers.Dense(48, activation="sigmoid"))
-    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+    # Valores de batch_size a probar
+    batch_sizes = [32, 64, 128, 256, 512]
 
-    model.compile(
-        optimizer="adam",
-        loss="categorical_crossentropy",
-        metrics=["accuracy"],
+    # Listas para guardar los resultados
+    accuracy_results = []
+    time_results = []
+    model_names = []
+
+    for bs in batch_sizes:
+        print("\nEntrenamiento con batch_size =", bs)
+
+        model = keras.Sequential()
+        model.add(keras.Input(shape=X_train[0].shape))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(48, activation="sigmoid"))
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer="adam",
+            loss="categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        early_stopping = keras.callbacks.EarlyStopping(
+            monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train,
+            Y_train,
+            epochs=100,
+            batch_size=bs,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=0,
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+        model_names.append(f"MLP (batch_size={bs})")
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    # Grafica comparativa
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por batch_size",
     )
-
-    # Configuracion del EarlyStopping
-    early_stopping = keras.callbacks.EarlyStopping(
-        monitor="val_loss",
-        patience=10,
-        restore_best_weights=True,
-        verbose=1,
-    )
-
-    print("\n Entrenando modelo con batch_size=32")
-    history = model.fit(
-        X_train,
-        Y_train,
-        epochs=100,
-        batch_size=32,
-        validation_split=0.1,
-        callbacks=[early_stopping],
-        verbose=1,
-    )
-
-    print("\n Entrenamiento detenido en epoca: ", early_stopping.stopped_epoch)
-
-    show_train_evolution(history, "Evolución del entrenamiento MLP3")
-
-    print("\n Evaluando el modelo con el conjunto de Test")
-    test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
-
-    print("Perdida en el conjunto de Test:", test_loss)
-    print("Precisión en el conjunto de Test:", test_accuracy)
 
 
 # =============================================================================
@@ -512,12 +531,14 @@ if __name__ == "__main__":
     )
     print("Datos para MLP cargados y listos.")
 
-    # Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
+    ### Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
     # tarea_mlp1(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
-    # Tarea MLP2: Ajustar el valor del parámetro epochs
-
+    ### Tarea MLP2: Ajustar el valor del parámetro epochs
     # Ajuste manual de epocas
-    #tarea_mlp2_ajuste_manual(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp2_ajuste_manual(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
     # EarlyStopping
-    tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    ### Tarea MLP3: Ajustar el valor de 'batch_size'
+    tarea_mlp3(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
