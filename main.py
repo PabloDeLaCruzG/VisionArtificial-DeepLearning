@@ -517,7 +517,6 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por batch_size",
     )
 
-
 # TAREA 4: Probar diferentes funciones de activación
 def tarea_mlp4(X_train, Y_train, X_test, Y_test):
     """
@@ -573,7 +572,7 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
             metrics=['accuracy']
         )
 
-        early_stopping_callback = keras.callbacks.EarlyStopping(
+        early_stopping = keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=10,
             restore_best_weights=True,
@@ -587,7 +586,7 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
             epochs=100,
             batch_size=512,
             validation_split=0.1,
-            callbacks=[early_stopping_callback],
+            callbacks=[early_stopping],
             verbose=0
         )
         end_time = time.time()
@@ -610,6 +609,80 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
         accuracy_results,
         time_results,
         "Comparacion de modelos por Funcion de Activacion",
+    )
+
+# TAREA 5: Ajustar el numero de neuronas
+def tarea_mlp5(X_train, Y_train, X_test, Y_test):
+    """
+    
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP5 ---")
+
+    accuracy_results = []
+    time_results = []
+    model_names = []
+
+    # Neuronas para ajustar
+    neurons = [32, 64, 128, 256, 512]
+
+    for neuron in neurons:
+        print("\nEntrenamiento con", neuron, "neuronas")
+
+        model = keras.Sequential()
+        model.add(layers.Input(shape=X_train[0].shape))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(neuron, activation="leaky_relu", kernel_initializer="he_normal"))
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer="adam",
+            loss="categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        early_stopping = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=10,
+            restore_best_weights=True,
+            verbose=1
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train,
+            Y_train,
+            epochs=100,
+            batch_size=512,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=0
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+        model_names.append(f"{neuron} neuronas")
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    # Grafica comparativa
+    print("\nGrafica comparativa")
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por numero de neuronas",
     )
 
 
@@ -642,4 +715,7 @@ if __name__ == "__main__":
     #tarea_mlp3(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP4: Probar diferentes funciones de activación
-    tarea_mlp4(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp4(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    ### Tarea MLP5:
+    tarea_mlp5(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
