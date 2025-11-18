@@ -614,8 +614,7 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
 # TAREA 5: Ajustar el numero de neuronas
 def tarea_mlp5(X_train, Y_train, X_test, Y_test):
     """
-    
-
+    Analiza el efecto del numero de neuronas en la capa oculta
     Args:
         X_train: Datos de entrenamiento
         Y_train: Etiquetas de entrenamiento
@@ -685,7 +684,85 @@ def tarea_mlp5(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por numero de neuronas",
     )
 
+# TAREA 6: Ajustar el numero de capas y de neuronas por capa
+def tarea_mlp6(X_train, Y_train, X_test, Y_test):
+    """
+    Compara el rendimiento de diferentes arquitecturas de red, 
+    variando entre el numero de capas y la distribucion de 128 neuronas
 
+    Args:
+        X_train (_type_): _description_
+        Y_train (_type_): _description_
+        X_test (_type_): _description_
+        Y_test (_type_): _description_
+    """
+    print("--- Ejecutando Tarea: MLP6 ---")
+
+    accuracy_results = []
+    time_results = []
+    model_names = []
+
+    architectures = [
+        {'layers': [128], 'name': '1 capa de 128 neuronas'},
+        {'layers': [64, 64], 'name': '2 capas de 64 neuronas'},
+        {'layers': [96, 32], 'name': '2 capas de 96 y 32 neuronas'},
+        {'layers': [64,32,32], 'name': '3 capas de 64, 32 y 32 neuronas'},
+    ]
+
+    for arch in architectures:
+        print("\nEntrenamiento con arquitectura:", arch['name'])
+
+        model = keras.Sequential()
+        model.add(keras.Input(shape=X_train[0].shape))
+        model.add(layers.Flatten())
+
+        for neurons in arch['layers']:
+            model.add(layers.Dense(neurons, activation='leaky_relu', kernel_initializer='he_normal'))
+        
+        model.add(layers.Dense(len(CLASS_NAMES), activation='softmax'))
+
+        model.compile(
+            optimizer="adam",
+            loss="categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        early_stopping = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=10,
+            restore_best_weights=True,
+            verbose=1
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train, Y_train,
+            epochs=100,
+            batch_size=512,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=0,
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+        model_names.append(arch['name'])
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    # Grafica comparativa
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por arquitectura",
+    )
 
 
 
@@ -717,5 +794,9 @@ if __name__ == "__main__":
     ### Tarea MLP4: Probar diferentes funciones de activación
     #tarea_mlp4(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
-    ### Tarea MLP5:
-    tarea_mlp5(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    ### Tarea MLP5: Ajustar el numero de neuronas
+    #tarea_mlp5(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    ### Tarea MLP6: Ajustar el numero de capas y de neuronas por capa
+    tarea_mlp6(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
