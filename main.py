@@ -691,10 +691,10 @@ def tarea_mlp6(X_train, Y_train, X_test, Y_test):
     variando entre el numero de capas y la distribucion de 128 neuronas
 
     Args:
-        X_train (_type_): _description_
-        Y_train (_type_): _description_
-        X_test (_type_): _description_
-        Y_test (_type_): _description_
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de testv
     """
     print("--- Ejecutando Tarea: MLP6 ---")
 
@@ -764,6 +764,82 @@ def tarea_mlp6(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por arquitectura",
     )
 
+# Tarea 7: Aplicar Batch Normalization
+def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
+    """
+    Aplica Batch Normalization
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP7 ---")
+
+    model = keras.Sequential()
+    model.add(keras.Input(shape=X_train[0].shape))
+    model.add(layers.Flatten())
+
+    # Capa oculta 1, sin activacion
+    #model.add(keras.layers.Dense(96, kernel_initializer="he_normal"))
+    # Normalizar
+    model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Dense(96, activation="leaky_relu", kernel_initializer="he_normal"))
+    
+    # Actua como capa separada
+    #model.add(keras.layers.Activation("leaky_relu"))
+
+    # Capa Oculta 2
+    #model.add(keras.layers.Dense(32, kernel_initializer="he_normal"))
+    model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Dense(32, activation="leaky_relu", kernel_initializer="he_normal"))
+    #model.add(keras.layers.Activation("leaky_relu"))
+
+    # Capa de Salida
+    model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=10,
+        restore_best_weights=True,
+        verbose=1
+    )
+
+    print("\nEntrenando modelo con Batch Normalization...")
+    start_time = time.time()
+    
+    history = model.fit(
+        X_train, Y_train,
+        epochs=100,
+        batch_size=512, # Mantenemos el batch_size óptimo
+        validation_split=0.1,
+        callbacks=[early_stopping],
+        verbose=0
+    )
+
+    end_time = time.time()
+    training_time = end_time - start_time
+
+    print(f"Tiempo de entrenamiento: {training_time:.2f} segundos")
+
+    loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+    
+    print(f"\n--- Resultado Batch Normalization ---")
+    print(f"Precision: {test_accuracy*100:.2f}%")
+    print(f"Perdida: {loss:.4f}")
+    print(f"Tiempo: {training_time:.2f}s")
+    print(f"Epocas: {len(history.history['loss'])}")
+
+    show_train_evolution(history, "Evolucion del entrenamiento con Batch Normalization")
+
 
 
 # =============================================================================
@@ -798,5 +874,7 @@ if __name__ == "__main__":
     #tarea_mlp5(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP6: Ajustar el numero de capas y de neuronas por capa
-    tarea_mlp6(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp6(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
+    ### Tarea MLP7: Aplicar Batch Normalization
+    tarea_mlp7_batch_normalization(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
