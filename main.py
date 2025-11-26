@@ -908,6 +908,85 @@ def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
     show_train_evolution(history, "Evolucion del entrenamiento con BN + Dropout")
 
 
+### Tarea 7: Añade Data augmentation
+def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
+    """
+    Añade capas de preprocesamiento para generar variaciones de las imágenes
+    durante el entrenamiento y mejorar la generalización
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP7 ---")
+
+    # Definir data_augmentation
+    data_augmentation = keras.Sequential(
+        [
+            layers.RandomFlip("horizontal"),
+            layers.RandomRotation(0.1),
+            layers.RandomZoom(0.1),
+        ]
+    )
+
+    model = keras.Sequential()
+    model.add(keras.Input(shape=X_train[0].shape))
+
+    # Transforma las imagenes antes de que sea un vector
+    model.add(data_augmentation)
+
+    model.add(layers.Flatten())
+
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dense(96, activation="leaky_relu", kernel_initializer="he_normal"))
+    model.add(layers.Dropout(0.2))
+
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dense(32, activation="leaky_relu", kernel_initializer="he_normal"))
+    model.add(layers.Dropout(0.2))
+
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+    )
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=10,
+        restore_best_weights=True,
+        verbose=1,
+    )
+
+    print("\nEntrenando modelo con Data Augmentation...")
+    start_time = time.time()
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=200,
+        batch_size=512,
+        validation_split=0.1,
+        callbacks=[early_stopping],
+        verbose=1,
+    )
+    end_time = time.time()
+    training_time = end_time - start_time
+
+    loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=1)
+
+    print(f"\n--- Resultado Data Augmentation ---")
+    print(f"Precision: {test_accuracy*100:.2f}%")
+    print(f"Perdida: {loss:.4f}")
+    print(f"Tiempo: {training_time:.2f}s")
+    print(f"Epocas: {len(history.history['loss'])}")
+
+    show_train_evolution(history, "Evolucion del entrenamiento con Data Augmentation")
+
+
+
 # =============================================================================
 # 5. BLOQUE DE EJECUCIÓN PRINCIPAL
 # =============================================================================
@@ -946,4 +1025,8 @@ if __name__ == "__main__":
     # tarea_mlp7_batch_normalization(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP7_BN_DO: Regularizar con Dropout
-    tarea_mlp7_dropout(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp7_dropout(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    ### Tarea MLP7_BN_DO_DA: Aumento de datos
+    tarea_mlp7_data_augmentation(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
