@@ -1,14 +1,10 @@
 from random import sample
-import tensorflow as ts
 from tensorflow import keras
+from keras import layers
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
 import os
-
-import keras
-from keras import layers
-from keras import ops
 
 # Funciones auxiliares para visualizar los resultados de los modelos entrenados
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -23,16 +19,16 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 # Nombres de las clases de CIFAR-10
 CLASS_NAMES = [
-    "avión",
+    "avion",
     "coche",
-    "pájaro",
+    "pajaro",
     "gato",
     "ciervo",
     "perro",
     "rana",
     "caballo",
     "barco",
-    "camión",
+    "camion",
 ]
 
 
@@ -1065,6 +1061,98 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
     show_train_evolution(history, "Evolucion del entrenamiento con Learning Rate")
 
 
+def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
+    """
+    MLP definitivo maximizado en rendimiento
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: MLP7 PRO MAX ---")
+
+    data_augmentation = keras.Sequential(
+        [
+            layers.RandomFlip("horizontal"),
+            layers.RandomContrast(0.1),
+        ]
+    )
+
+    model = keras.Sequential()
+    model.add(keras.Input(shape=X_train[0].shape))
+    model.add(data_augmentation)
+    model.add(layers.Flatten())
+
+    architecture = [512, 256, 128]
+
+    for i, neurons in enumerate(architecture):
+        model.add(layers.Dense(neurons, kernel_initializer="he_normal"))
+
+        # Entrena 6 capas sin explotar aun
+        model.add(layers.BatchNormalization())
+
+        # Activacion
+        model.add(layers.Activation("leaky_relu"))
+
+        # Dropout de mas a menos, porque al principio ka capa es mas grande
+        drop_rate = 0.25 if i < 2 else 0.15
+        model.add(layers.Dropout(drop_rate))
+
+    # Capa de salida
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+    )
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss", patience=15, restore_best_weights=True, verbose=1
+    )
+
+    lr_scheduler = keras.callbacks.ReduceLROnPlateau(
+        monitor="val_loss",
+        factor=0.2,  # Reducción más suave (0.2 en vez de 0.1)
+        patience=5,
+        min_lr=1e-6,
+        verbose=1,
+    )
+
+    start_time = time.time()
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=200,
+        batch_size=512,
+        validation_split=0.1,
+        callbacks=[
+            early_stopping,
+            lr_scheduler,
+        ],
+        verbose=1,
+    )
+    end_time = time.time()
+    training_time = end_time - start_time
+
+    loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=1)
+
+    print(f"\n--- Resultado MLP7 PRO MAX ---")
+    print(f"Precision: {test_accuracy*100:.2f}%")
+    print(f"Perdida: {loss:.4f}")
+    print(f"Tiempo: {training_time:.2f}s")
+    print(f"Epocas: {len(history.history['loss'])}")
+
+    # Matriz de Confusión
+    print("\nGenerando Matriz de Confusión...")
+    Y_pred = model.predict(X_test)
+    show_confusion_matriz(
+        Y_test, Y_pred, CLASS_NAMES, "Matriz de Confusión - Modelo Final"
+    )
+
+    show_train_evolution(history, "Evolucion del entrenamiento con MLP7 PRO MAX")
+
+
 # =============================================================================
 # 5. BLOQUE DE EJECUCIÓN PRINCIPAL
 # =============================================================================
@@ -1109,4 +1197,7 @@ if __name__ == "__main__":
     # tarea_mlp7_data_augmentation(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP7_BN_DO_DA_LR: Callback para el Learning Rate
-    tarea_mlp7_learning_rate(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp7_learning_rate(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+
+    ### Tarea MLP7_PRO_MAX
+    tarea_mlp7_max(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
