@@ -1035,9 +1035,9 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
         verbose=1,
     )
 
-    # Si val_loss no mejora en 3 epocas, divide el LR entre 10
+    # Si val_loss no mejora en 5 epocas, divide el LR entre 20
     lr_scheduler = keras.callbacks.ReduceLROnPlateau(
-        monitor="val_loss", factor=0.1, patience=3, min_lr=1e-6, verbose=1
+        monitor="val_loss", factor=0.2, patience=5, min_lr=1e-6, verbose=1
     )
 
     print("\nEntrenando modelo con Learning Rate...")
