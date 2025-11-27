@@ -390,8 +390,9 @@ def tarea_mlp2_ajuste_manual(
 # TAREA 2_": Ajustar el valor de epochs usando callback EarlyStopping
 def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
     """
-    Realiza UNA ejecución utilizando el callback EarlyStopping
-    para demostrar su efectividad en detener el entrenamiento automáticamente.
+    Comparativa de configuraciones de EarlyStopping.
+    Entrena varios modelos variando 'patience' y 'min_delta' para analizar
+    el impacto en tiempo y precision.
 
     Args:
         X_train: Datos de entrenamiento
@@ -402,44 +403,71 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
 
     print("\n--- Ejecutando Tarea MLP2 - EarlyStopping ---")
 
-    model = keras.Sequential()
-    model.add(keras.Input(shape=X_train[0].shape))
-    model.add(layers.Flatten())
-    model.add(layers.Dense(48, activation="sigmoid"))
-    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+    configs = [
+        {"patience": 5, "min_delta": 0.01},
+        {"patience": 10, "min_delta": 0},
+        {"patience": 15, "min_delta": 0},
+    ]
 
-    model.compile(
-        optimizer="adam",
-        loss="categorical_crossentropy",
-        metrics=["accuracy"],
+    model_names = []
+    accuracy_results = []
+    time_results = []
+
+    for conf in configs:
+        print(f"\n--- Probando Configuracion: {conf} ---")
+
+
+        model = keras.Sequential()
+        model.add(keras.Input(shape=X_train[0].shape))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(48, activation="sigmoid"))
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer="adam",
+            loss="categorical_crossentropy",
+            metrics=["accuracy"],
+        )
+
+        early_stopping = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=conf["patience"],
+            min_delta=conf["min_delta"],
+            restore_best_weights=True,
+            verbose=1,
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train,
+            Y_train,
+            epochs=100,
+            batch_size=32,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=0,
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        model_names.append(
+            f"MLP (patience={conf['patience']}, min_delta={conf['min_delta']})"
+        )
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por EarlyStopping con diferente configuracion",
     )
-
-    early_stopping = keras.callbacks.EarlyStopping(
-        monitor="val_loss",
-        patience=10,
-        restore_best_weights=True,
-        verbose=1,
-    )
-
-    print("\nIniciando entrenamiento con EarlyStopping 80 epocas")
-    history = model.fit(
-        X_train,
-        Y_train,
-        epochs=80,
-        batch_size=32,
-        validation_split=0.1,
-        callbacks=[early_stopping],
-        verbose=1,
-    )
-
-    print("\nVisualizando evolucion con EarlyStopping")
-    show_train_evolution(history, "Evolucion del entrenamiento con EarlyStopping")
-
-    print("\nEvaluando el modelo con el conjunto de Test")
-    test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
-
-    print("Perdida en el conjunto de Test:", test_loss)
-    print("Precisión en el conjunto de Test:", test_accuracy)
 
 
 # TAREA 3: Ajustar el valor de 'batch_size'
@@ -1173,7 +1201,7 @@ if __name__ == "__main__":
     # Ajuste manual de epocas
     # tarea_mlp2_ajuste_manual(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
     # EarlyStopping
-    # tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP3: Ajustar el valor de 'batch_size'
     # tarea_mlp3(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
@@ -1200,4 +1228,4 @@ if __name__ == "__main__":
     # tarea_mlp7_learning_rate(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
 
     ### Tarea MLP7_PRO_MAX
-    tarea_mlp7_max(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp7_max(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
