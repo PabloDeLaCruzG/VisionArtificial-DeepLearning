@@ -1,6 +1,6 @@
 from random import sample
 from tensorflow import keras
-from keras import layers
+from keras import layers, callbacks
 import numpy as np
 import matplotlib.pyplot as plt
 import logging
@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import time  # Para medir el tiempo de entrenamiento
 
 # =============================================================================
-# 1. CONFIGURACIÓN GLOBAL
+# 1. CONFIGURACION GLOBAL
 # =============================================================================
 # Configuracion para ocultar mensajes de advertencia de TensorFlow
 logging.disable(logging.WARNING)
@@ -252,6 +252,10 @@ def tarea_test():
         show_image(X_train[i], title)
 
 
+# ==========
+# Parte 1
+# ==========
+
 # TAREA 1: Definir, entrenar y evaluar un MLP con Keras
 def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     """
@@ -311,7 +315,6 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
     print("Perdida en el conjunto de Test:", test_loss)
     print("Precisión en el conjunto de Test:", test_accuracy)
-
 
 # TAREA 2_1: Ajustar el valor del parámetro epochs
 def tarea_mlp2_ajuste_manual(
@@ -386,7 +389,6 @@ def tarea_mlp2_ajuste_manual(
     print(f"Pérdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
     print("=" * 60)
 
-
 # TAREA 2_": Ajustar el valor de epochs usando callback EarlyStopping
 def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
     """
@@ -429,7 +431,7 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
             metrics=["accuracy"],
         )
 
-        early_stopping = keras.callbacks.EarlyStopping(
+        early_stopping = callbacks.EarlyStopping(
             monitor="val_loss",
             patience=conf["patience"],
             min_delta=conf["min_delta"],
@@ -469,7 +471,6 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por EarlyStopping con diferente configuracion",
     )
 
-
 # TAREA 3: Ajustar el valor de 'batch_size'
 def tarea_mlp3(X_train, Y_train, X_test, Y_test):
     """
@@ -506,7 +507,7 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
             metrics=["accuracy"],
         )
 
-        early_stopping = keras.callbacks.EarlyStopping(
+        early_stopping = callbacks.EarlyStopping(
             monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
         )
 
@@ -540,7 +541,6 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por batch_size",
     )
-
 
 # TAREA 4: Probar diferentes funciones de activación
 def tarea_mlp4(X_train, Y_train, X_test, Y_test):
@@ -595,7 +595,7 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
             optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
         )
 
-        early_stopping = keras.callbacks.EarlyStopping(
+        early_stopping = callbacks.EarlyStopping(
             monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
         )
 
@@ -630,7 +630,6 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por Funcion de Activacion",
     )
-
 
 # TAREA 5: Ajustar el numero de neuronas
 def tarea_mlp5(X_train, Y_train, X_test, Y_test):
@@ -670,7 +669,7 @@ def tarea_mlp5(X_train, Y_train, X_test, Y_test):
             metrics=["accuracy"],
         )
 
-        early_stopping = keras.callbacks.EarlyStopping(
+        early_stopping = callbacks.EarlyStopping(
             monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
         )
 
@@ -705,7 +704,6 @@ def tarea_mlp5(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por numero de neuronas",
     )
-
 
 # TAREA 6: Ajustar el numero de capas y de neuronas por capa
 def tarea_mlp6(X_train, Y_train, X_test, Y_test):
@@ -754,7 +752,7 @@ def tarea_mlp6(X_train, Y_train, X_test, Y_test):
             metrics=["accuracy"],
         )
 
-        early_stopping = keras.callbacks.EarlyStopping(
+        early_stopping = callbacks.EarlyStopping(
             monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
         )
 
@@ -788,7 +786,6 @@ def tarea_mlp6(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por arquitectura",
     )
-
 
 # Tarea 7: Aplicar Batch Normalization
 def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
@@ -830,7 +827,7 @@ def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
 
-    early_stopping = keras.callbacks.EarlyStopping(
+    early_stopping = callbacks.EarlyStopping(
         monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
     )
 
@@ -861,7 +858,6 @@ def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
     print(f"Epocas: {len(history.history['loss'])}")
 
     show_train_evolution(history, "Evolucion del entrenamiento con Batch Normalization")
-
 
 ### Tarea 7: Añade regularizacion con Dropout
 def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
@@ -896,7 +892,7 @@ def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
 
-    early_stopping = keras.callbacks.EarlyStopping(
+    early_stopping = callbacks.EarlyStopping(
         monitor="val_loss",
         patience=10,
         restore_best_weights=True,
@@ -930,7 +926,6 @@ def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
     print(f"Epocas: {len(history.history['loss'])}")
 
     show_train_evolution(history, "Evolucion del entrenamiento con BN + Dropout")
-
 
 ### Tarea 7: Añade Data augmentation
 def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
@@ -978,7 +973,7 @@ def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
 
-    early_stopping = keras.callbacks.EarlyStopping(
+    early_stopping = callbacks.EarlyStopping(
         monitor="val_loss",
         patience=10,
         restore_best_weights=True,
@@ -1008,7 +1003,6 @@ def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
     print(f"Epocas: {len(history.history['loss'])}")
 
     show_train_evolution(history, "Evolucion del entrenamiento con Data Augmentation")
-
 
 ### Tarea 7: Callback para el Learning Rate
 def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
@@ -1052,7 +1046,7 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
 
-    early_stopping = keras.callbacks.EarlyStopping(
+    early_stopping = callbacks.EarlyStopping(
         monitor="val_loss",
         patience=10,
         restore_best_weights=True,
@@ -1060,7 +1054,7 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
     )
 
     # Si val_loss no mejora en 5 epocas, divide el LR entre 20
-    lr_scheduler = keras.callbacks.ReduceLROnPlateau(
+    lr_scheduler = callbacks.ReduceLROnPlateau(
         monitor="val_loss", factor=0.2, patience=5, min_lr=1e-6, verbose=1
     )
 
@@ -1088,7 +1082,7 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
 
     show_train_evolution(history, "Evolucion del entrenamiento con Learning Rate")
 
-
+### Tarea 7: Modelo definitivo
 def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
     """
     MLP definitivo maximizado en rendimiento
@@ -1135,11 +1129,11 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
         optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
     )
 
-    early_stopping = keras.callbacks.EarlyStopping(
+    early_stopping = callbacks.EarlyStopping(
         monitor="val_loss", patience=15, restore_best_weights=True, verbose=1
     )
 
-    lr_scheduler = keras.callbacks.ReduceLROnPlateau(
+    lr_scheduler = callbacks.ReduceLROnPlateau(
         monitor="val_loss",
         factor=0.2,  # Reducción más suave (0.2 en vez de 0.1)
         patience=5,
@@ -1180,6 +1174,73 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
 
     show_train_evolution(history, "Evolucion del entrenamiento con MLP7 PRO MAX")
 
+# ==========
+# Parte 2
+# ==========
+
+def tarea_cnn1(X_train, Y_train, X_test, Y_test):
+    """
+    Definir modelo con CNN y evaluar las epochs
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: CNN1 ---")
+
+    model = keras.Sequential()
+
+    # Capa de entrada CNN
+    model.add(layers.Conv2D(16, (3,3), activation="relu", kernel_initializer="he_normal", input_shape=X_train[0].shape))
+    model.add(layers.MaxPooling2D((2,2)))
+
+    # Capa oculta CNN
+    model.add(layers.Conv2D(32, (3,3), activation="relu", kernel_initializer="he_normal"))
+    model.add(layers.MaxPooling2D((2,2)))
+
+    # Aplana
+    model.add(layers.Flatten())
+
+    # Capa oculta
+    model.add(layers.Dense(100, activation="relu", kernel_initializer="he_normal"))
+    
+    # Capa de salida
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+    )
+
+    early_stopping = callbacks.EarlyStopping(
+        monitor="val_loss", patience=5, restore_best_weights=True, verbose=1
+    )
+
+    start_time = time.time()
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=200,
+        batch_size=32, # por defecto
+        validation_split=0.1,
+        callbacks=[early_stopping],
+        verbose=1,
+    )
+    end_time = time.time()
+    training_time = end_time - start_time
+
+    loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=1)
+
+    print(f"\n--- Resultado CNN1 ---")
+    print(f"Precision: {test_accuracy*100:.2f}%")
+    print(f"Perdida: {loss:.4f}")
+    print(f"Tiempo: {training_time:.2f}s")
+    print(f"Epocas: {len(history.history['loss'])}")
+
+    show_train_evolution(history, "Evolucion del entrenamiento con CNN1")
+
+
 
 # =============================================================================
 # 5. BLOQUE DE EJECUCIÓN PRINCIPAL
@@ -1188,44 +1249,49 @@ if __name__ == "__main__":
     # tarea_test()
 
     # --- Carga de datos para los modelos ---
-    print("Cargando y preprocesando datos para MLP...")
-    X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp = (
+    print("Cargando y preprocesando datos")
+    X_train, Y_train, X_test, Y_test = (
         cargar_y_preprocesar_cifar10_mlp()
     )
-    print("Datos para MLP cargados y listos.")
 
+    #### PARTE 1: MLP
     ### Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
-    # tarea_mlp1(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp1(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP2: Ajustar el valor del parámetro epochs
     # Ajuste manual de epocas
-    # tarea_mlp2_ajuste_manual(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp2_ajuste_manual(X_train, Y_train, X_test, Y_test)
     # EarlyStopping
-    tarea_mlp2_early_stopping(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP3: Ajustar el valor de 'batch_size'
-    # tarea_mlp3(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp3(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP4: Probar diferentes funciones de activación
-    # tarea_mlp4(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp4(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP5: Ajustar el numero de neuronas
-    # tarea_mlp5(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp5(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP6: Ajustar el numero de capas y de neuronas por capa
-    # tarea_mlp6(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp6(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP7_BN: Aplicar Batch Normalization
-    # tarea_mlp7_batch_normalization(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP7_BN_DO: Regularizar con Dropout
-    # tarea_mlp7_dropout(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP7_BN_DO_DA: Aumento de datos
-    # tarea_mlp7_data_augmentation(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP7_BN_DO_DA_LR: Callback para el Learning Rate
-    # tarea_mlp7_learning_rate(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    # tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP7_PRO_MAX
-    #tarea_mlp7_max(X_train_mlp, Y_train_mlp, X_test_mlp, Y_test_mlp)
+    #tarea_mlp7_max(X_train, Y_train, X_test, Y_test)
+
+
+    #### PARTE 2: CNN
+    ### Tarea CNN1: Definir, entrenar y evaluar un CNN sencillo con Keras
+    tarea_cnn1(X_train, Y_train, X_test, Y_test)
