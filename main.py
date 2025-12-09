@@ -256,6 +256,7 @@ def tarea_test():
 # Parte 1
 # ==========
 
+
 # TAREA 1: Definir, entrenar y evaluar un MLP con Keras
 def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     """
@@ -315,6 +316,7 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
     print("Perdida en el conjunto de Test:", test_loss)
     print("Precisión en el conjunto de Test:", test_accuracy)
+
 
 # TAREA 2_1: Ajustar el valor del parámetro epochs
 def tarea_mlp2_ajuste_manual(
@@ -389,6 +391,7 @@ def tarea_mlp2_ajuste_manual(
     print(f"Pérdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
     print("=" * 60)
 
+
 # TAREA 2_": Ajustar el valor de epochs usando callback EarlyStopping
 def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
     """
@@ -417,7 +420,6 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
 
     for conf in configs:
         print(f"\n--- Probando Configuracion: {conf} ---")
-
 
         model = keras.Sequential()
         model.add(keras.Input(shape=X_train[0].shape))
@@ -470,6 +472,7 @@ def tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por EarlyStopping con diferente configuracion",
     )
+
 
 # TAREA 3: Ajustar el valor de 'batch_size'
 def tarea_mlp3(X_train, Y_train, X_test, Y_test):
@@ -541,6 +544,7 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por batch_size",
     )
+
 
 # TAREA 4: Probar diferentes funciones de activación
 def tarea_mlp4(X_train, Y_train, X_test, Y_test):
@@ -631,6 +635,7 @@ def tarea_mlp4(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por Funcion de Activacion",
     )
 
+
 # TAREA 5: Ajustar el numero de neuronas
 def tarea_mlp5(X_train, Y_train, X_test, Y_test):
     """
@@ -704,6 +709,7 @@ def tarea_mlp5(X_train, Y_train, X_test, Y_test):
         time_results,
         "Comparacion de modelos por numero de neuronas",
     )
+
 
 # TAREA 6: Ajustar el numero de capas y de neuronas por capa
 def tarea_mlp6(X_train, Y_train, X_test, Y_test):
@@ -787,6 +793,7 @@ def tarea_mlp6(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por arquitectura",
     )
 
+
 # Tarea 7: Aplicar Batch Normalization
 def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
     """
@@ -859,6 +866,7 @@ def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
 
     show_train_evolution(history, "Evolucion del entrenamiento con Batch Normalization")
 
+
 ### Tarea 7: Añade regularizacion con Dropout
 def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
     """
@@ -926,6 +934,7 @@ def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
     print(f"Epocas: {len(history.history['loss'])}")
 
     show_train_evolution(history, "Evolucion del entrenamiento con BN + Dropout")
+
 
 ### Tarea 7: Añade Data augmentation
 def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
@@ -1004,6 +1013,7 @@ def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
 
     show_train_evolution(history, "Evolucion del entrenamiento con Data Augmentation")
 
+
 ### Tarea 7: Callback para el Learning Rate
 def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
     """
@@ -1081,6 +1091,7 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
     print(f"Epocas: {len(history.history['loss'])}")
 
     show_train_evolution(history, "Evolucion del entrenamiento con Learning Rate")
+
 
 ### Tarea 7: Modelo definitivo
 def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
@@ -1174,10 +1185,13 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
 
     show_train_evolution(history, "Evolucion del entrenamiento con MLP7 PRO MAX")
 
+
 # ==========
 # Parte 2
 # ==========
 
+
+### Tarea CNN1: Entrenar modelo con CNN sencillo
 def tarea_cnn1(X_train, Y_train, X_test, Y_test):
     """
     Definir modelo con CNN y evaluar las epochs
@@ -1193,19 +1207,29 @@ def tarea_cnn1(X_train, Y_train, X_test, Y_test):
     model = keras.Sequential()
 
     # Capa de entrada CNN
-    model.add(layers.Conv2D(16, (3,3), activation="relu", kernel_initializer="he_normal", input_shape=X_train[0].shape))
-    model.add(layers.MaxPooling2D((2,2)))
+    model.add(
+        layers.Conv2D(
+            16,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_normal",
+            input_shape=X_train[0].shape,
+        )
+    )
+    model.add(layers.MaxPooling2D((2, 2)))
 
     # Capa oculta CNN
-    model.add(layers.Conv2D(32, (3,3), activation="relu", kernel_initializer="he_normal"))
-    model.add(layers.MaxPooling2D((2,2)))
+    model.add(
+        layers.Conv2D(32, (3, 3), activation="relu", kernel_initializer="he_normal")
+    )
+    model.add(layers.MaxPooling2D((2, 2)))
 
     # Aplana
     model.add(layers.Flatten())
 
     # Capa oculta
     model.add(layers.Dense(100, activation="relu", kernel_initializer="he_normal"))
-    
+
     # Capa de salida
     model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
 
@@ -1222,7 +1246,7 @@ def tarea_cnn1(X_train, Y_train, X_test, Y_test):
         X_train,
         Y_train,
         epochs=200,
-        batch_size=32, # por defecto
+        batch_size=32,  # por defecto
         validation_split=0.1,
         callbacks=[early_stopping],
         verbose=1,
@@ -1241,6 +1265,102 @@ def tarea_cnn1(X_train, Y_train, X_test, Y_test):
     show_train_evolution(history, "Evolucion del entrenamiento con CNN1")
 
 
+### Tarea CNN2: Ajustar el kernel_size y reconfigurar parametros y callbacks
+def tarea_cnn2(X_train, Y_train, X_test, Y_test):
+    """
+    Ajustar el tamaño del kernel, probando diferentes configuraciones
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: CNN2 ---")
+
+    combinations = [
+        ((3, 3), (3, 3)),
+        ((3, 3), (5, 5)),
+        ((5, 5), (3, 3)),
+        ((5, 5), (5, 5)),
+    ]
+
+    model_names = []
+    accuracy_results = []
+    time_results = []
+
+    for k1, k2 in combinations:
+        name = f"K1={k1} + K2={k2}"
+
+        print("\nEntrenamiento con", name)
+
+        model = keras.Sequential()
+
+        model.add(
+            layers.Conv2D(
+                16,
+                k1,
+                activation="relu",
+                kernel_initializer="he_normal",
+                input_shape=X_train[0].shape,
+            )
+        )
+        model.add(layers.MaxPooling2D((2, 2)))
+
+        model.add(
+            layers.Conv2D(32, k2, activation="relu", kernel_initializer="he_normal")
+        )
+        model.add(layers.MaxPooling2D((2, 2)))
+
+        model.add(layers.Flatten())
+        model.add(layers.Dense(100, activation="relu", kernel_initializer="he_normal"))
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+        )
+
+        early_stopping = callbacks.EarlyStopping(
+            monitor="val_loss",
+            mode="min",
+            patience=10,
+            min_delta=0.001,
+            restore_best_weights=True,
+            verbose=0,
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train,
+            Y_train,
+            epochs=100,
+            batch_size=32,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=0,
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        model_names.append(name)
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    # Grafica comparativa
+    print("\nGrafica comparativa")
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por Kernel Size",
+    )
+
 
 # =============================================================================
 # 5. BLOQUE DE EJECUCIÓN PRINCIPAL
@@ -1250,9 +1370,7 @@ if __name__ == "__main__":
 
     # --- Carga de datos para los modelos ---
     print("Cargando y preprocesando datos")
-    X_train, Y_train, X_test, Y_test = (
-        cargar_y_preprocesar_cifar10_mlp()
-    )
+    X_train, Y_train, X_test, Y_test = cargar_y_preprocesar_cifar10_mlp()
 
     #### PARTE 1: MLP
     ### Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
@@ -1262,7 +1380,7 @@ if __name__ == "__main__":
     # Ajuste manual de epocas
     # tarea_mlp2_ajuste_manual(X_train, Y_train, X_test, Y_test)
     # EarlyStopping
-    #tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test)
+    # tarea_mlp2_early_stopping(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP3: Ajustar el valor de 'batch_size'
     # tarea_mlp3(X_train, Y_train, X_test, Y_test)
@@ -1289,9 +1407,11 @@ if __name__ == "__main__":
     # tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP7_PRO_MAX
-    #tarea_mlp7_max(X_train, Y_train, X_test, Y_test)
-
+    # tarea_mlp7_max(X_train, Y_train, X_test, Y_test)
 
     #### PARTE 2: CNN
     ### Tarea CNN1: Definir, entrenar y evaluar un CNN sencillo con Keras
-    tarea_cnn1(X_train, Y_train, X_test, Y_test)
+    # tarea_cnn1(X_train, Y_train, X_test, Y_test)
+
+    ### Tarea CNN2: Ajustar el kernel_size
+    tarea_cnn2(X_train, Y_train, X_test, Y_test)
