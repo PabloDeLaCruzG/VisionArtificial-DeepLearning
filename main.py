@@ -86,11 +86,11 @@ def show_train_evolution(history, title="Evolucion del entrenamiento"):
     # Eje izquierdo - precision
     color = "tab:blue"
     ax1.set_xlabel("Epocas")
-    ax1.set_ylabel("Accuracy", color=color)
+    ax1.set_ylabel("Precision", color=color)
 
-    line1 = ax1.plot(epochs, acc, label="Train Accuracy", color=color, linestyle="-")
+    line1 = ax1.plot(epochs, acc, label="Precision Entrenamiento", color=color, linestyle="-")
     line2 = ax1.plot(
-        epochs, val_acc, label="Val Accuracy", color="tab:cyan", linestyle="--"
+        epochs, val_acc, label="Precision Validacion", color="tab:cyan", linestyle="--"
     )
     ax1.tick_params(axis="y", labelcolor=color)
 
@@ -103,10 +103,10 @@ def show_train_evolution(history, title="Evolucion del entrenamiento"):
     # Eje derecho - perdida
     ax2 = ax1.twinx()
     color = "tab:red"
-    ax2.set_ylabel("Loss", color=color)
-    line3 = ax2.plot(epochs, loss, label="Train Loss", color=color, linestyle="-")
+    ax2.set_ylabel("Perdida", color=color)
+    line3 = ax2.plot(epochs, loss, label="Perdida Entrenamiento", color=color, linestyle="-")
     line4 = ax2.plot(
-        epochs, val_loss, label="Val Loss", color="tab:orange", linestyle="--"
+        epochs, val_loss, label="Perdida Validacion", color="tab:orange", linestyle="--"
     )
     ax2.tick_params(axis="y", labelcolor=color)
 
@@ -156,11 +156,11 @@ def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"
     # Eje izquierdo - precision
     color_acc = 'tab:blue'
     ax1.set_xlabel('Epoca')
-    ax1.set_ylabel('Precision (Accuracy)', color=color_acc)
+    ax1.set_ylabel('Precision', color=color_acc)
     
     # Lineas promedio
-    l1 = ax1.plot(epochs, mean_acc, label='Train Acc (Avg)', color=color_acc, linestyle='-')
-    l2 = ax1.plot(epochs, mean_val_acc, label='Val Acc (Avg)', color='tab:cyan', linestyle='--')
+    l1 = ax1.plot(epochs, mean_acc, label='Precision Entrenamiento (Avg)', color=color_acc, linestyle='-')
+    l2 = ax1.plot(epochs, mean_val_acc, label='Precision Validacion (Avg)', color='tab:cyan', linestyle='--')
 
     # Areas sombreadas
     ax1.fill_between(epochs, mean_acc - std_acc, mean_acc + std_acc, color=color_acc, alpha=0.2)
@@ -177,11 +177,11 @@ def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"
     # Eje derecho - perdida
     ax2 = ax1.twinx()
     color_loss = 'tab:red'
-    ax2.set_ylabel('Perdida (Loss)', color=color_loss)
+    ax2.set_ylabel('Perdida', color=color_loss)
     
     # Lineas promedio
-    l3 = ax2.plot(epochs, mean_loss, label='Train Loss (Avg)', color=color_loss, linestyle='-')
-    l4 = ax2.plot(epochs, mean_val_loss, label='Val Loss (Avg)', color='tab:orange', linestyle='--')
+    l3 = ax2.plot(epochs, mean_loss, label='Perdida Entrenamiento (Avg)', color=color_loss, linestyle='-')
+    l4 = ax2.plot(epochs, mean_val_loss, label='Perdida Validacion (Avg)', color='tab:orange', linestyle='--')
     
     # Areas sombreadas
     ax2.fill_between(epochs, mean_loss - std_loss, mean_loss + std_loss, color=color_loss, alpha=0.1)
@@ -204,6 +204,7 @@ def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"
     fig.tight_layout()
     plt.show()
 
+
 def show_models_comparations(
     models_names, accuracies, times, title="Comparacion de modelos"
 ):
@@ -224,8 +225,8 @@ def show_models_comparations(
 
     # Eje izquierdo - precision
     color = 'tab:blue'
-    ax1.bar(x - width/2, accuracies, width, label='Precision (Test)', color=color, alpha=0.7)
-    ax1.set_ylabel('Tasa de Acierto (Accuracy)', color=color)
+    ax1.bar(x - width/2, accuracies, width, label='Precision', color=color, alpha=0.7)
+    ax1.set_ylabel('Precision de Entrenamiento', color=color)
     ax1.set_title(title)
     ax1.set_xticks(x)
     ax1.set_xticklabels(models_names, rotation=45, ha="right")
@@ -1113,7 +1114,7 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
 
     # Si val_loss no mejora en 5 epocas, divide el LR entre 20
     lr_scheduler = callbacks.ReduceLROnPlateau(
-        monitor="val_loss", factor=0.2, patience=5, min_lr=1e-6, verbose=1
+        monitor="val_loss", factor=0.1, patience=3, min_lr=1e-6, verbose=1
     )
 
     print("\nEntrenando modelo con Learning Rate...")
@@ -1410,6 +1411,108 @@ def tarea_cnn2(X_train, Y_train, X_test, Y_test):
     )
 
 
+### Tarea CNN3: Modelo CNN definitivo
+def tarea_cnn3(X_train, Y_train, X_test, Y_test):
+    """
+    Modelo CNN definitivo maximizado en rendimiento
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+    print("--- Ejecutando Tarea: CNN3 ---")
+
+    model = keras.Sequential()
+
+    # Capa de entrada CNN
+    model.add(
+        layers.Conv2D(
+            32,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_normal",
+            input_shape=X_train[0].shape,
+        )
+    )
+
+    # Capa oculta CNN
+    model.add(
+        layers.Conv2D(32, (3, 3), activation="relu", kernel_initializer="he_normal")
+    )
+
+    model.add(layers.MaxPooling2D((2, 2)))
+
+    # Capa oculta CNN
+    # model.add(
+    #     layers.Conv2D(64, (3, 3), activation="relu", kernel_initializer="he_normal")
+    # )
+    # # Capa oculta CNN
+    # model.add(
+    #     layers.Conv2D(64, (3, 3), activation="relu", kernel_initializer="he_normal")
+    # )
+
+    # model.add(layers.MaxPooling2D((2, 2)))
+
+    # # Capa oculta CNN
+    # model.add(
+    #     layers.Conv2D(128, (3, 3), activation="relu", kernel_initializer="he_normal")
+    # )
+    # # Capa oculta CNN
+    # model.add(
+    #     layers.Conv2D(128, (3, 3), activation="relu", kernel_initializer="he_normal")
+    # )
+
+    # model.add(layers.MaxPooling2D((2, 2)))
+
+    # Aplana
+    model.add(layers.Flatten())
+
+    # Capa oculta
+    model.add(layers.Dense(100, activation="relu", kernel_initializer="he_normal"))
+
+    # Capa de salida
+    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+    model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+    )
+
+    early_stopping = callbacks.EarlyStopping(
+        monitor="val_loss",
+        mode="min",
+        min_delta=0.001,
+        patience=10,
+        restore_best_weights=True,
+        verbose=1,
+    )
+
+    start_time = time.time()
+    history = model.fit(
+        X_train,
+        Y_train,
+        epochs=100,
+        batch_size=32,  # por defecto
+        validation_split=0.1,
+        callbacks=[early_stopping],
+        verbose=1,
+    )
+    end_time = time.time()
+    training_time = end_time - start_time
+
+    loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=1)
+
+    print(f"\n--- Resultado CNN1 ---")
+    print(f"Precision: {test_accuracy*100:.2f}%")
+    print(f"Perdida: {loss:.4f}")
+    print(f"Tiempo: {training_time:.2f}s")
+    print(f"Epocas: {len(history.history['loss'])}")
+
+    show_train_evolution(history, "Evolucion del entrenamiento con CNN1")
+
+
+
 # =============================================================================
 # 5. BLOQUE DE EJECUCION PRINCIPAL
 # =============================================================================
@@ -1464,3 +1567,5 @@ if __name__ == "__main__":
     ### Tarea CNN2: Ajustar el kernel_size
     # tarea_cnn2(X_train, Y_train, X_test, Y_test)
 
+    ### Tarea CNN3: Modelo CNN definitivo
+    tarea_cnn3(X_train, Y_train, X_test, Y_test)
