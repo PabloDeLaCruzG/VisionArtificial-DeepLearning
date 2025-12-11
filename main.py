@@ -38,8 +38,8 @@ CLASS_NAMES = [
 def cargar_y_preprocesar_cifar10_mlp():
     """
     Carga el dataset CIFAR-10 y lo preprocesa para un MLP.
-    - Normaliza las imágenes a [0, 1].
-    - Aplana las imágenes a un vector de 3072.
+    - Normaliza las imagenes a [0, 1].
+    - Aplana las imagenes a un vector de 3072.
     - Codifica las etiquetas en one-hot.
     """
     (X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
@@ -65,7 +65,7 @@ def show_image(image, title):
     plt.show()
 
 
-def show_train_evolution(history, title="Evolución del entrenamiento"):
+def show_train_evolution(history, title="Evolucion del entrenamiento"):
     """
     Muestra la evolucion de la precision y la perdida durante el entrenamiento.
 
@@ -73,44 +73,74 @@ def show_train_evolution(history, title="Evolución del entrenamiento"):
         history: Objecto devuelto por el metodo model.fit de keras.
         title (str): Titulo principal para la figura
     """
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-    fig.suptitle(title, fontsize=16)
+    # Extraer datos
+    acc = history.history["accuracy"]
+    val_acc = history.history["val_accuracy"]
+    loss = history.history["loss"]
+    val_loss = history.history["val_loss"]
+    epochs = range(1, len(acc) + 1)
 
-    # Grafica de Accuracy
-    ax1.plot(history.history["accuracy"], label="Precision Entrenamiento")
-    ax1.plot(history.history["val_accuracy"], label="Precision Validacion")
-    ax1.set_title("Precision por Epoca")
-    ax1.set_xlabel("Epochs")
-    ax1.set_ylabel("Accuracy")
-    ax1.legend()
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    plt.title(title)
 
-    # Grafica de Loss
-    ax2.plot(history.history["loss"], label="Perdida Entrenamiento")
-    ax2.plot(history.history["val_loss"], label="Perdida Validacion")
-    ax2.set_title("Perdida por Epoca")
-    ax2.set_xlabel("Epochs")
-    ax2.set_ylabel("Loss")
-    ax2.legend()
+    # Eje izquierdo - precision
+    color = "tab:blue"
+    ax1.set_xlabel("Epocas")
+    ax1.set_ylabel("Accuracy", color=color)
 
+    line1 = ax1.plot(epochs, acc, label="Train Accuracy", color=color, linestyle="-")
+    line2 = ax1.plot(
+        epochs, val_acc, label="Val Accuracy", color="tab:cyan", linestyle="--"
+    )
+    ax1.tick_params(axis="y", labelcolor=color)
+
+    # Ajuste de escala
+    min_acc = min(min(acc), min(val_acc))
+    max_acc = max(max(acc), max(val_acc))
+    margin_acc = (max_acc - min_acc) * 0.1
+    ax1.set_ylim(max(0, min_acc - margin_acc), min(1, max_acc + margin_acc))
+
+    # Eje derecho - perdida
+    ax2 = ax1.twinx()
+    color = "tab:red"
+    ax2.set_ylabel("Loss", color=color)
+    line3 = ax2.plot(epochs, loss, label="Train Loss", color=color, linestyle="-")
+    line4 = ax2.plot(
+        epochs, val_loss, label="Val Loss", color="tab:orange", linestyle="--"
+    )
+    ax2.tick_params(axis="y", labelcolor=color)
+
+    # Ajuste de escala
+    min_loss = min(min(loss), min(val_loss))
+    max_loss = max(max(loss), max(val_loss))
+    margin_loss = (max_loss - min_loss) * 0.1
+    ax2.set_ylim(max(0, min_loss - margin_loss), max_loss + margin_loss)
+
+    # Leyenda
+    lines = line1 + line2 + line3 + line4
+    labels = [l.get_label() for l in lines]
+    ax1.legend(lines, labels, loc="center right")
+
+    fig.tight_layout()
     plt.show()
 
 
-def show_avg_evolution(histories, title="Evolución Promediada del Entrenamiento"):
+def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"):
     """
-    Muestra la evolución promediada de la precisión y la pérdida de varias
-    ejecuciones, incluyendo la desviación estándar.
+    Muestra la evolucion promediada de la precision y la perdida de varias
+    ejecuciones, incluyendo la desviacion estandar.
 
     Args:
         histories (list): Lista de objetos 'history.history' de Keras.
-        title (str): Título principal para la figura.
+        title (str): Titulo principal para la figura.
     """
-    # Extraer métricas de todas las histories
+    # Extraer metricas de todas las histories
     accs = np.array([h["accuracy"] for h in histories])
     val_accs = np.array([h["val_accuracy"] for h in histories])
     losses = np.array([h["loss"] for h in histories])
     val_losses = np.array([h["val_loss"] for h in histories])
 
-    # Calcular promedio y desviación estándar a lo largo de las ejecuciones (axis=0)
+    # Calcular promedio y desviacion estandar a lo largo de las ejecuciones (axis=0)
     mean_acc, std_acc = np.mean(accs, axis=0), np.std(accs, axis=0)
     mean_val_acc, std_val_acc = np.mean(val_accs, axis=0), np.std(val_accs, axis=0)
     mean_loss, std_loss = np.mean(losses, axis=0), np.std(losses, axis=0)
@@ -120,50 +150,62 @@ def show_avg_evolution(histories, title="Evolución Promediada del Entrenamiento
 
     epochs = range(1, len(mean_acc) + 1)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(17, 6))
-    fig.suptitle(title, fontsize=16)
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    plt.title(title)
 
-    # Gráfica de Precisión (Accuracy)
-    ax1.plot(epochs, mean_acc, "b", label="Precisión Entrenamiento (Promedio)")
-    ax1.fill_between(
-        epochs, mean_acc - std_acc, mean_acc + std_acc, color="b", alpha=0.2
-    )
-    ax1.plot(epochs, mean_val_acc, "r", label="Precisión Validación (Promedio)")
-    ax1.fill_between(
-        epochs,
-        mean_val_acc - std_val_acc,
-        mean_val_acc + std_val_acc,
-        color="r",
-        alpha=0.2,
-    )
-    ax1.set_title("Precisión Promedio por Época")
-    ax1.set_xlabel("Época")
-    ax1.set_ylabel("Precisión")
-    ax1.legend()
+    # Eje izquierdo - precision
+    color_acc = 'tab:blue'
+    ax1.set_xlabel('Epoca')
+    ax1.set_ylabel('Precision (Accuracy)', color=color_acc)
+    
+    # Lineas promedio
+    l1 = ax1.plot(epochs, mean_acc, label='Train Acc (Avg)', color=color_acc, linestyle='-')
+    l2 = ax1.plot(epochs, mean_val_acc, label='Val Acc (Avg)', color='tab:cyan', linestyle='--')
 
-    # Gráfica de Pérdida (Loss)
-    ax2.plot(epochs, mean_loss, "b", label="Pérdida Entrenamiento (Promedio)")
-    ax2.fill_between(
-        epochs, mean_loss - std_loss, mean_loss + std_loss, color="b", alpha=0.2
-    )
-    ax2.plot(epochs, mean_val_loss, "r", label="Pérdida Validación (Promedio)")
-    ax2.fill_between(
-        epochs,
-        mean_val_loss - std_val_loss,
-        mean_val_loss + std_val_loss,
-        color="r",
-        alpha=0.2,
-    )
-    ax2.set_title("Pérdida Promedio por Época")
-    ax2.set_xlabel("Época")
-    ax2.set_ylabel("Pérdida")
-    ax2.legend()
+    # Areas sombreadas
+    ax1.fill_between(epochs, mean_acc - std_acc, mean_acc + std_acc, color=color_acc, alpha=0.2)
+    ax1.fill_between(epochs, mean_val_acc - std_val_acc, mean_val_acc + std_val_acc, color='tab:cyan', alpha=0.2)
+    
+    ax1.tick_params(axis='y', labelcolor=color_acc)
 
+    # Ajuste de escala
+    min_y_acc = min(np.min(mean_acc), np.min(mean_val_acc))
+    max_y_acc = max(np.max(mean_acc), np.max(mean_val_acc))
+    margin_acc = (max_y_acc - min_y_acc) * 0.1
+    ax1.set_ylim(max(0, min_y_acc - margin_acc), min(1, max_y_acc + margin_acc))
+
+    # Eje derecho - perdida
+    ax2 = ax1.twinx()
+    color_loss = 'tab:red'
+    ax2.set_ylabel('Perdida (Loss)', color=color_loss)
+    
+    # Lineas promedio
+    l3 = ax2.plot(epochs, mean_loss, label='Train Loss (Avg)', color=color_loss, linestyle='-')
+    l4 = ax2.plot(epochs, mean_val_loss, label='Val Loss (Avg)', color='tab:orange', linestyle='--')
+    
+    # Areas sombreadas
+    ax2.fill_between(epochs, mean_loss - std_loss, mean_loss + std_loss, color=color_loss, alpha=0.1)
+    ax2.fill_between(epochs, mean_val_loss - std_val_loss, mean_val_loss + std_val_loss, color='tab:orange', alpha=0.1)
+    
+    ax2.tick_params(axis='y', labelcolor=color_loss)
+
+    # Ajuste de escala
+    min_y_loss = min(np.min(mean_loss), np.min(mean_val_loss))
+    max_y_loss = max(np.max(mean_loss), np.max(mean_val_loss))
+    margin_loss = (max_y_loss - min_y_loss) * 0.1
+    ax2.set_ylim(max(0, min_y_loss - margin_loss), max_y_loss + margin_loss)
+
+    # Leyenda
+    lines = l1 + l2 + l3 + l4
+    labels = [l.get_label() for l in lines]
+    
+    ax1.legend(lines, labels, loc='center right')
+
+    fig.tight_layout()
     plt.show()
 
-
 def show_models_comparations(
-    models_names, accuracies, times, title="Comparación de modelos"
+    models_names, accuracies, times, title="Comparacion de modelos"
 ):
     """
     Crea una grafica de barras para comparar la precision y el tiempo de entrenamiento de varios modelos.
@@ -180,33 +222,39 @@ def show_models_comparations(
 
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
-    # Barras de Precisión
-    rects1 = ax1.bar(
-        x - width / 2, accuracies, width, label="Precisión (Test)", color="tab:blue"
-    )
-
-    ax1.set_ylabel("Tasa de Acierto (Accuracy)", color="tab:blue")
-    ax1.set_xlabel("Modelos")
+    # Eje izquierdo - precision
+    color = 'tab:blue'
+    ax1.bar(x - width/2, accuracies, width, label='Precision (Test)', color=color, alpha=0.7)
+    ax1.set_ylabel('Tasa de Acierto (Accuracy)', color=color)
     ax1.set_title(title)
     ax1.set_xticks(x)
     ax1.set_xticklabels(models_names, rotation=45, ha="right")
-    ax1.tick_params(axis="y", labelcolor="tab:blue")
-    ax1.legend(loc="upper left")
+    ax1.tick_params(axis='y', labelcolor=color)
+    
+    # Ajuste escala
+    if len(accuracies) > 0:
+        min_acc = min(accuracies)
+        max_acc = max(accuracies)
+        
+        ax1.set_ylim(max(0, min_acc - 0.05), min(1, max_acc + 0.05))
 
-    # Eje Y secundario para el Tiempo
+    # Eje derecho - tiempo
     ax2 = ax1.twinx()
-    rects2 = ax2.bar(
-        x + width / 2, times, width, label="Tiempo (s)", color="tab:orange"
-    )
-    ax2.set_ylabel("Tiempo de Entrenamiento (s)", color="tab:orange")
-    ax2.tick_params(axis="y", labelcolor="tab:orange")
-    ax2.legend(loc="upper right")
+    color = 'tab:orange'
+    ax2.bar(x + width/2, times, width, label='Tiempo (s)', color=color, alpha=0.7)
+    ax2.set_ylabel('Tiempo de Entrenamiento (s)', color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    # Leyenda
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, loc='upper left')
 
     fig.tight_layout()
     plt.show()
 
 
-def show_confusion_matriz(Y_true, Y_pred, class_names, title="Matriz de Confusión"):
+def show_confusion_matriz(Y_true, Y_pred, class_names, title="Matriz de Confusion"):
     """
     Calcula y muestra la amatriz de confusion
 
@@ -221,7 +269,7 @@ def show_confusion_matriz(Y_true, Y_pred, class_names, title="Matriz de Confusi�
     y_true_labels = np.argmax(Y_true, axis=1) if Y_true.ndim > 1 else Y_true
     y_pred_labels = np.argmax(Y_pred, axis=1) if Y_pred.ndim > 1 else Y_pred
 
-    # Calcular la matriz de confusión
+    # Calcular la matriz de confusion
     cm = confusion_matrix(y_true_labels, y_pred_labels)
 
     # Mostrar la matriz de confusion
@@ -234,18 +282,18 @@ def show_confusion_matriz(Y_true, Y_pred, class_names, title="Matriz de Confusi�
 
 
 # =============================================================================
-# 4. FUNCIONES DE LAS TAREAS DE LA PRÁCTICA
+# 4. FUNCIONES DE LAS TAREAS DE LA PRACTICA
 # =============================================================================
 def tarea_test():
     """
-    Código para la sección 2 de la práctica: Cargar, imprimir dimensiones
+    Codigo para la seccion 2 de la practica: Cargar, imprimir dimensiones
     y mostrar ejemplos de CIFAR-10.
     """
     print("--- Ejecutando Tarea: Toma de Contacto con CIFAR-10 ---")
     (X_train, Y_train), (_, _) = keras.datasets.cifar10.load_data()
     print("Dimensiones de los datos originales (X_train):", X_train.shape)
 
-    print("\nMostrando 3 imágenes de ejemplo...")
+    print("\nMostrando 3 imagenes de ejemplo...")
     for i in sample(range(len(X_train)), 3):
         class_index = Y_train[i][0]
         title = f"Imagen X_train[{i}] - Clase: {CLASS_NAMES[class_index]}"
@@ -309,21 +357,21 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     print("Tiempo de entrenamiento:", training_time, "segundos")
 
     # --- Visualizar Evolucion del entrenamiento
-    show_train_evolution(history, "Evolución del entrenamiento MLP1")
+    show_train_evolution(history, "Evolucion del entrenamiento MLP1")
 
     # --- Evaluar modelo con el conjunto de Test
     print("\n--- Evaluando el modelo con el conjunto de Test ---")
     test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
     print("Perdida en el conjunto de Test:", test_loss)
-    print("Precisión en el conjunto de Test:", test_accuracy)
+    print("Precision en el conjunto de Test:", test_accuracy)
 
 
-# TAREA 2_1: Ajustar el valor del parámetro epochs
+# TAREA 2_1: Ajustar el valor del parametro epochs
 def tarea_mlp2_ajuste_manual(
     X_train, Y_train, X_test, Y_test, n_repeticiones=5, epochs=80
 ):
     """
-    Realiza N ejecuciones con un número fijo de épocas para
+    Realiza N ejecuciones con un numero fijo de epocas para
     analizar el comportamiento promedio del modelo y detectar visualmente el
     sobreentrenamiento.
 
@@ -340,7 +388,7 @@ def tarea_mlp2_ajuste_manual(
     test_accuracies = []
 
     for i in range(n_repeticiones):
-        print(f"\n--- Ejecutando repetición {i+1}/{n_repeticiones} ---")
+        print(f"\n--- Ejecutando repeticion {i+1}/{n_repeticiones} ---")
 
         # --- Definir arquitectura del modelo, igual que en mlp1
         model = keras.Sequential()
@@ -365,20 +413,20 @@ def tarea_mlp2_ajuste_manual(
             validation_split=0.1,
         )
 
-        print(f"Evaluando modelo de la repetición {i+1}...")
+        print(f"Evaluando modelo de la repeticion {i+1}...")
         loss, acc = model.evaluate(X_test, Y_test, verbose=0)
         test_losses.append(loss)
         test_accuracies.append(acc)
 
         # 3. Guardar el historial
         histories.append(history.history)
-        print(f"Repetición {i+1} finalizada. Test Accuracy: {acc*100:.2f}%")
+        print(f"Repeticion {i+1} finalizada. Test Accuracy: {acc*100:.2f}%")
 
     # 4. Visualizar los resultados promediados del entrenamiento
-    print("\nGenerando gráfica promediada de las ejecuciones...")
-    show_avg_evolution(histories, "Evolución Promedio del Entrenamiento (100 Épocas)")
+    print("\nGenerando grafica promediada de las ejecuciones...")
+    show_avg_evolution(histories, "Evolucion Promedio del Entrenamiento (100 Epocas)")
 
-    # --- Calcular y mostrar los resultados promediados de la evaluación ---
+    # --- Calcular y mostrar los resultados promediados de la evaluacion ---
     mean_test_acc = np.mean(test_accuracies)
     std_test_acc = np.std(test_accuracies)
     mean_test_loss = np.mean(test_losses)
@@ -386,9 +434,9 @@ def tarea_mlp2_ajuste_manual(
 
     print("\n--- Resultados Finales Promediados en el Conjunto de Test ---")
     print(
-        f"Precisión (Accuracy) Promedio: {mean_test_acc*100:.2f}% (± {std_test_acc*100:.2f}%)"
+        f"Precision (Accuracy) Promedio: {mean_test_acc*100:.2f}% (± {std_test_acc*100:.2f}%)"
     )
-    print(f"Pérdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
+    print(f"Perdida (Loss) Promedio:     {mean_test_loss:.4f} (± {std_test_loss:.4f})")
     print("=" * 60)
 
 
@@ -546,7 +594,7 @@ def tarea_mlp3(X_train, Y_train, X_test, Y_test):
     )
 
 
-# TAREA 4: Probar diferentes funciones de activación
+# TAREA 4: Probar diferentes funciones de activacion
 def tarea_mlp4(X_train, Y_train, X_test, Y_test):
     """
     Compara el rendimiento de diferentes combinaciones de funciones de
@@ -845,7 +893,7 @@ def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
         X_train,
         Y_train,
         epochs=100,
-        batch_size=512,  # Mantenemos el batch_size óptimo
+        batch_size=512,  # Mantenemos el batch_size optimo
         validation_split=0.1,
         callbacks=[early_stopping],
         verbose=0,
@@ -870,7 +918,7 @@ def tarea_mlp7_batch_normalization(X_train, Y_train, X_test, Y_test):
 ### Tarea 7: Añade regularizacion con Dropout
 def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
     """
-    Añade regularización con Dropout a la arquitectura con BN
+    Añade regularizacion con Dropout a la arquitectura con BN
 
     Args:
         X_train: Datos de entrenamiento
@@ -939,8 +987,8 @@ def tarea_mlp7_dropout(X_train, Y_train, X_test, Y_test):
 ### Tarea 7: Añade Data augmentation
 def tarea_mlp7_data_augmentation(X_train, Y_train, X_test, Y_test):
     """
-    Añade capas de preprocesamiento para generar variaciones de las imágenes
-    durante el entrenamiento y mejorar la generalización
+    Añade capas de preprocesamiento para generar variaciones de las imagenes
+    durante el entrenamiento y mejorar la generalizacion
 
     Args:
         X_train: Datos de entrenamiento
@@ -1093,7 +1141,7 @@ def tarea_mlp7_learning_rate(X_train, Y_train, X_test, Y_test):
     show_train_evolution(history, "Evolucion del entrenamiento con Learning Rate")
 
 
-### Tarea 7: Modelo definitivo
+### Tarea 7: Modelo MLP definitivo
 def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
     """
     MLP definitivo maximizado en rendimiento
@@ -1146,7 +1194,7 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
 
     lr_scheduler = callbacks.ReduceLROnPlateau(
         monitor="val_loss",
-        factor=0.2,  # Reducción más suave (0.2 en vez de 0.1)
+        factor=0.2,  # Reduccion mas suave (0.2 en vez de 0.1)
         patience=5,
         min_lr=1e-6,
         verbose=1,
@@ -1176,11 +1224,11 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
     print(f"Tiempo: {training_time:.2f}s")
     print(f"Epocas: {len(history.history['loss'])}")
 
-    # Matriz de Confusión
-    print("\nGenerando Matriz de Confusión...")
+    # Matriz de Confusion
+    print("\nGenerando Matriz de Confusion...")
     Y_pred = model.predict(X_test)
     show_confusion_matriz(
-        Y_test, Y_pred, CLASS_NAMES, "Matriz de Confusión - Modelo Final"
+        Y_test, Y_pred, CLASS_NAMES, "Matriz de Confusion - Modelo Final"
     )
 
     show_train_evolution(history, "Evolucion del entrenamiento con MLP7 PRO MAX")
@@ -1363,7 +1411,7 @@ def tarea_cnn2(X_train, Y_train, X_test, Y_test):
 
 
 # =============================================================================
-# 5. BLOQUE DE EJECUCIÓN PRINCIPAL
+# 5. BLOQUE DE EJECUCION PRINCIPAL
 # =============================================================================
 if __name__ == "__main__":
     # tarea_test()
@@ -1376,7 +1424,7 @@ if __name__ == "__main__":
     ### Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
     # tarea_mlp1(X_train, Y_train, X_test, Y_test)
 
-    ### Tarea MLP2: Ajustar el valor del parámetro epochs
+    ### Tarea MLP2: Ajustar el valor del parametro epochs
     # Ajuste manual de epocas
     # tarea_mlp2_ajuste_manual(X_train, Y_train, X_test, Y_test)
     # EarlyStopping
@@ -1385,7 +1433,7 @@ if __name__ == "__main__":
     ### Tarea MLP3: Ajustar el valor de 'batch_size'
     # tarea_mlp3(X_train, Y_train, X_test, Y_test)
 
-    ### Tarea MLP4: Probar diferentes funciones de activación
+    ### Tarea MLP4: Probar diferentes funciones de activacion
     # tarea_mlp4(X_train, Y_train, X_test, Y_test)
 
     ### Tarea MLP5: Ajustar el numero de neuronas
@@ -1414,4 +1462,5 @@ if __name__ == "__main__":
     # tarea_cnn1(X_train, Y_train, X_test, Y_test)
 
     ### Tarea CNN2: Ajustar el kernel_size
-    tarea_cnn2(X_train, Y_train, X_test, Y_test)
+    # tarea_cnn2(X_train, Y_train, X_test, Y_test)
+
