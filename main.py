@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import time  # Para medir el tiempo de entrenamiento
 
 # =============================================================================
-# 1. CONFIGURACION GLOBAL
+# CONFIGURACION GLOBAL
 # =============================================================================
 # Configuracion para ocultar mensajes de advertencia de TensorFlow
 logging.disable(logging.WARNING)
@@ -33,9 +33,9 @@ CLASS_NAMES = [
 
 
 # =============================================================================
-# 2. FUNCIONES DE CARGA Y PREPROCESAMIENTO DE DATOS
+# FUNCIONES DE CARGA Y PREPROCESAMIENTO DE DATOS
 # =============================================================================
-def cargar_y_preprocesar_cifar10_mlp():
+def cargar_y_preprocesar_cifar10():
     """
     Carga el dataset CIFAR-10 y lo preprocesa para un MLP.
     - Normaliza las imagenes a [0, 1].
@@ -51,17 +51,6 @@ def cargar_y_preprocesar_cifar10_mlp():
     Y_test = keras.utils.to_categorical(Y_test, len(CLASS_NAMES))
 
     return X_train, Y_train, X_test, Y_test
-
-
-def show_image(image, title):
-    """Funcion para mostrar una imagen con su titulo"""
-
-    plt.figure()
-    plt.imshow(image, cmap="gray")
-    plt.title(title)
-    plt.xticks([])  # Ocultar ejes
-    plt.yticks([])  # Ocultar ejes
-    plt.show()
 
 
 def show_train_evolution(history, title="Evolucion del entrenamiento"):
@@ -326,22 +315,8 @@ def show_confusion_matriz(Y_true, Y_pred, class_names, title="Matriz de Confusio
 
 
 # =============================================================================
-# 4. FUNCIONES DE LAS TAREAS DE LA PRACTICA
+# FUNCIONES DE LAS TAREAS DE LA PRACTICA
 # =============================================================================
-def tarea_test():
-    """
-    Codigo para la seccion 2 de la practica: Cargar, imprimir dimensiones
-    y mostrar ejemplos de CIFAR-10.
-    """
-    print("--- Ejecutando Tarea: Toma de Contacto con CIFAR-10 ---")
-    (X_train, Y_train), (_, _) = keras.datasets.cifar10.load_data()
-    print("Dimensiones de los datos originales (X_train):", X_train.shape)
-
-    print("\nMostrando 3 imagenes de ejemplo...")
-    for i in sample(range(len(X_train)), 3):
-        class_index = Y_train[i][0]
-        title = f"Imagen X_train[{i}] - Clase: {CLASS_NAMES[class_index]}"
-        show_image(X_train[i], title)
 
 
 # ==========
@@ -362,7 +337,7 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     """
     print("--- Ejecutando Tarea: MLP1 ---")
 
-    # --- Definir arquitectura del modelo
+    # Definir arquitectura del modelo
     model = keras.Sequential()
 
     # Capa de entrada
@@ -375,18 +350,18 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     # softmax convierte las salidas en un vector de probabilidades
     model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
 
-    # --- Compilar Modelo
+    # Compilar Modelo
     model.compile(
         optimizer="adam",  # Optimizador adam
         loss="categorical_crossentropy",  # FUncion de perdida para la clasificacion
         metrics=["accuracy"],  # Metrica de evaluacion
     )
 
-    # --- Resumen del modelo
+    # Resumen del modelo
     print("\n--- Resumen del modelo ---")
     model.summary()
 
-    # --- Entrenar el modelo
+    # Entrenar el modelo
     print("\n--- Entrenando el modelo ---")
     start_time = time.time()
     history = model.fit(
@@ -400,10 +375,10 @@ def tarea_mlp1(X_train, Y_train, X_test, Y_test):
     training_time = end_time - start_time
     print("Tiempo de entrenamiento:", training_time, "segundos")
 
-    # --- Visualizar Evolucion del entrenamiento
+    # Visualizar Evolucion del entrenamiento
     show_train_evolution(history, "Evolucion del entrenamiento MLP1")
 
-    # --- Evaluar modelo con el conjunto de Test
+    # Evaluar modelo con el conjunto de Test
     print("\n--- Evaluando el modelo con el conjunto de Test ---")
     test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
     print("Perdida en el conjunto de Test:", test_loss)
@@ -434,7 +409,7 @@ def tarea_mlp2_ajuste_manual(
     for i in range(n_repeticiones):
         print(f"\n--- Ejecutando repeticion {i+1}/{n_repeticiones} ---")
 
-        # --- Definir arquitectura del modelo, igual que en mlp1
+        # Definir arquitectura del modelo, igual que en mlp1
         model = keras.Sequential()
         model.add(keras.Input(shape=X_train[0].shape))
         model.add(layers.Flatten())
@@ -447,7 +422,7 @@ def tarea_mlp2_ajuste_manual(
             metrics=["accuracy"],
         )
 
-        # --- Entrenar el modelo con 80 epocas, sin EarlyStopping
+        # Entrenar el modelo con 80 epocas, sin EarlyStopping
         print("\n--- Entrenando el modelo con 100 epocas ---")
         history = model.fit(
             X_train,
@@ -462,15 +437,15 @@ def tarea_mlp2_ajuste_manual(
         test_losses.append(loss)
         test_accuracies.append(test_accuracy)
 
-        # 3. Guardar el historial
+        # Guardar el historial
         histories.append(history.history)
         print(f"Repeticion {i+1} finalizada. Test Accuracy: {test_accuracy*100:.2f}%")
 
-    # 4. Visualizar los resultados promediados del entrenamiento
+    # Visualizar los resultados promediados del entrenamiento
     print("\nGenerando grafica promediada de las ejecuciones...")
     show_avg_evolution(histories, "Evolucion Promedio del Entrenamiento (100 Epocas)")
 
-    # --- Calcular y mostrar los resultados promediados de la evaluacion ---
+    # Calcular y mostrar los resultados promediados de la evaluacion ---
     mean_test_acc = np.mean(test_accuracies)
     std_test_acc = np.std(test_accuracies)
     mean_test_loss = np.mean(test_losses)
@@ -1238,7 +1213,7 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
 
     lr_scheduler = callbacks.ReduceLROnPlateau(
         monitor="val_loss",
-        factor=0.2,  # Reduccion mas suave (0.2 en vez de 0.1)
+        factor=0.2,
         patience=5,
         min_lr=1e-6,
         verbose=1,
@@ -1268,7 +1243,6 @@ def tarea_mlp7_max(X_train, Y_train, X_test, Y_test):
     print(f"Tiempo: {training_time:.2f}s")
     print(f"Epocas: {len(history.history['loss'])}")
 
-    # Matriz de Confusion
     print("\nGenerando Matriz de Confusion...")
     Y_pred = model.predict(X_test)
     show_confusion_matriz(
@@ -1598,6 +1572,7 @@ def tarea_cnn3_compare_arch(X_train, Y_train, X_test, Y_test):
         "Comparacion de modelos por arquitectura de salida",
     )
 
+
 ### Tarea CNN3: Modelo CNN definitivo ~85%
 def tarea_cnn3_max(X_train, Y_train, X_test, Y_test):
     """
@@ -1728,14 +1703,13 @@ def tarea_cnn3_max(X_train, Y_train, X_test, Y_test):
 
 
 # =============================================================================
-# 5. BLOQUE DE EJECUCION PRINCIPAL
+# BLOQUE DE EJECUCION PRINCIPAL
 # =============================================================================
 if __name__ == "__main__":
-    # tarea_test()
 
-    # --- Carga de datos para los modelos ---
+    # Carga de datos para los modelos ---
     print("Cargando y preprocesando datos")
-    X_train, Y_train, X_test, Y_test = cargar_y_preprocesar_cifar10_mlp()
+    X_train, Y_train, X_test, Y_test = cargar_y_preprocesar_cifar10()
 
     #### PARTE 1: MLP
     ### Tarea MLP1: Definir, entrenar y evaluar un MLP con Keras
