@@ -39,7 +39,6 @@ def cargar_y_preprocesar_cifar10_mlp():
     """
     Carga el dataset CIFAR-10 y lo preprocesa para un MLP.
     - Normaliza las imagenes a [0, 1].
-    - Aplana las imagenes a un vector de 3072.
     - Codifica las etiquetas en one-hot.
     """
     (X_train, Y_train), (X_test, Y_test) = keras.datasets.cifar10.load_data()
@@ -88,7 +87,9 @@ def show_train_evolution(history, title="Evolucion del entrenamiento"):
     ax1.set_xlabel("Epocas")
     ax1.set_ylabel("Precision", color=color)
 
-    line1 = ax1.plot(epochs, acc, label="Precision Entrenamiento", color=color, linestyle="-")
+    line1 = ax1.plot(
+        epochs, acc, label="Precision Entrenamiento", color=color, linestyle="-"
+    )
     line2 = ax1.plot(
         epochs, val_acc, label="Precision Validacion", color="tab:cyan", linestyle="--"
     )
@@ -104,7 +105,9 @@ def show_train_evolution(history, title="Evolucion del entrenamiento"):
     ax2 = ax1.twinx()
     color = "tab:red"
     ax2.set_ylabel("Perdida", color=color)
-    line3 = ax2.plot(epochs, loss, label="Perdida Entrenamiento", color=color, linestyle="-")
+    line3 = ax2.plot(
+        epochs, loss, label="Perdida Entrenamiento", color=color, linestyle="-"
+    )
     line4 = ax2.plot(
         epochs, val_loss, label="Perdida Validacion", color="tab:orange", linestyle="--"
     )
@@ -154,19 +157,39 @@ def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"
     plt.title(title)
 
     # Eje izquierdo - precision
-    color_acc = 'tab:blue'
-    ax1.set_xlabel('Epoca')
-    ax1.set_ylabel('Precision', color=color_acc)
-    
+    color_acc = "tab:blue"
+    ax1.set_xlabel("Epoca")
+    ax1.set_ylabel("Precision", color=color_acc)
+
     # Lineas promedio
-    l1 = ax1.plot(epochs, mean_acc, label='Precision Entrenamiento (Avg)', color=color_acc, linestyle='-')
-    l2 = ax1.plot(epochs, mean_val_acc, label='Precision Validacion (Avg)', color='tab:cyan', linestyle='--')
+    l1 = ax1.plot(
+        epochs,
+        mean_acc,
+        label="Precision Entrenamiento (Avg)",
+        color=color_acc,
+        linestyle="-",
+    )
+    l2 = ax1.plot(
+        epochs,
+        mean_val_acc,
+        label="Precision Validacion (Avg)",
+        color="tab:cyan",
+        linestyle="--",
+    )
 
     # Areas sombreadas
-    ax1.fill_between(epochs, mean_acc - std_acc, mean_acc + std_acc, color=color_acc, alpha=0.2)
-    ax1.fill_between(epochs, mean_val_acc - std_val_acc, mean_val_acc + std_val_acc, color='tab:cyan', alpha=0.2)
-    
-    ax1.tick_params(axis='y', labelcolor=color_acc)
+    ax1.fill_between(
+        epochs, mean_acc - std_acc, mean_acc + std_acc, color=color_acc, alpha=0.2
+    )
+    ax1.fill_between(
+        epochs,
+        mean_val_acc - std_val_acc,
+        mean_val_acc + std_val_acc,
+        color="tab:cyan",
+        alpha=0.2,
+    )
+
+    ax1.tick_params(axis="y", labelcolor=color_acc)
 
     # Ajuste de escala
     min_y_acc = min(np.min(mean_acc), np.min(mean_val_acc))
@@ -176,18 +199,38 @@ def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"
 
     # Eje derecho - perdida
     ax2 = ax1.twinx()
-    color_loss = 'tab:red'
-    ax2.set_ylabel('Perdida', color=color_loss)
-    
+    color_loss = "tab:red"
+    ax2.set_ylabel("Perdida", color=color_loss)
+
     # Lineas promedio
-    l3 = ax2.plot(epochs, mean_loss, label='Perdida Entrenamiento (Avg)', color=color_loss, linestyle='-')
-    l4 = ax2.plot(epochs, mean_val_loss, label='Perdida Validacion (Avg)', color='tab:orange', linestyle='--')
-    
+    l3 = ax2.plot(
+        epochs,
+        mean_loss,
+        label="Perdida Entrenamiento (Avg)",
+        color=color_loss,
+        linestyle="-",
+    )
+    l4 = ax2.plot(
+        epochs,
+        mean_val_loss,
+        label="Perdida Validacion (Avg)",
+        color="tab:orange",
+        linestyle="--",
+    )
+
     # Areas sombreadas
-    ax2.fill_between(epochs, mean_loss - std_loss, mean_loss + std_loss, color=color_loss, alpha=0.1)
-    ax2.fill_between(epochs, mean_val_loss - std_val_loss, mean_val_loss + std_val_loss, color='tab:orange', alpha=0.1)
-    
-    ax2.tick_params(axis='y', labelcolor=color_loss)
+    ax2.fill_between(
+        epochs, mean_loss - std_loss, mean_loss + std_loss, color=color_loss, alpha=0.1
+    )
+    ax2.fill_between(
+        epochs,
+        mean_val_loss - std_val_loss,
+        mean_val_loss + std_val_loss,
+        color="tab:orange",
+        alpha=0.1,
+    )
+
+    ax2.tick_params(axis="y", labelcolor=color_loss)
 
     # Ajuste de escala
     min_y_loss = min(np.min(mean_loss), np.min(mean_val_loss))
@@ -198,8 +241,8 @@ def show_avg_evolution(histories, title="Evolucion Promediada del Entrenamiento"
     # Leyenda
     lines = l1 + l2 + l3 + l4
     labels = [l.get_label() for l in lines]
-    
-    ax1.legend(lines, labels, loc='center right')
+
+    ax1.legend(lines, labels, loc="center right")
 
     fig.tight_layout()
     plt.show()
@@ -224,32 +267,32 @@ def show_models_comparations(
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
     # Eje izquierdo - precision
-    color = 'tab:blue'
-    ax1.bar(x - width/2, accuracies, width, label='Precision', color=color, alpha=0.7)
-    ax1.set_ylabel('Precision de Entrenamiento', color=color)
+    color = "tab:blue"
+    ax1.bar(x - width / 2, accuracies, width, label="Precision", color=color, alpha=0.7)
+    ax1.set_ylabel("Precision de Entrenamiento", color=color)
     ax1.set_title(title)
     ax1.set_xticks(x)
     ax1.set_xticklabels(models_names, rotation=45, ha="right")
-    ax1.tick_params(axis='y', labelcolor=color)
-    
+    ax1.tick_params(axis="y", labelcolor=color)
+
     # Ajuste escala
     if len(accuracies) > 0:
         min_acc = min(accuracies)
         max_acc = max(accuracies)
-        
+
         ax1.set_ylim(max(0, min_acc - 0.05), min(1, max_acc + 0.05))
 
     # Eje derecho - tiempo
     ax2 = ax1.twinx()
-    color = 'tab:orange'
-    ax2.bar(x + width/2, times, width, label='Tiempo (s)', color=color, alpha=0.7)
-    ax2.set_ylabel('Tiempo de Entrenamiento (s)', color=color)
-    ax2.tick_params(axis='y', labelcolor=color)
+    color = "tab:orange"
+    ax2.bar(x + width / 2, times, width, label="Tiempo (s)", color=color, alpha=0.7)
+    ax2.set_ylabel("Tiempo de Entrenamiento (s)", color=color)
+    ax2.tick_params(axis="y", labelcolor=color)
 
     # Leyenda
     lines, labels = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines + lines2, labels + labels2, loc='upper left')
+    ax2.legend(lines + lines2, labels + labels2, loc="upper left")
 
     fig.tight_layout()
     plt.show()
@@ -415,13 +458,13 @@ def tarea_mlp2_ajuste_manual(
         )
 
         print(f"Evaluando modelo de la repeticion {i+1}...")
-        loss, acc = model.evaluate(X_test, Y_test, verbose=0)
+        loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
         test_losses.append(loss)
-        test_accuracies.append(acc)
+        test_accuracies.append(test_accuracy)
 
         # 3. Guardar el historial
         histories.append(history.history)
-        print(f"Repeticion {i+1} finalizada. Test Accuracy: {acc*100:.2f}%")
+        print(f"Repeticion {i+1} finalizada. Test Accuracy: {test_accuracy*100:.2f}%")
 
     # 4. Visualizar los resultados promediados del entrenamiento
     print("\nGenerando grafica promediada de las ejecuciones...")
@@ -1411,10 +1454,12 @@ def tarea_cnn2(X_train, Y_train, X_test, Y_test):
     )
 
 
-### Tarea CNN3: Modelo CNN definitivo
-def tarea_cnn3(X_train, Y_train, X_test, Y_test):
+### Tarea CNN3: Modelo CNN comparacion de arquitecturas
+def tarea_cnn3_compare_arch(X_train, Y_train, X_test, Y_test):
     """
-    Modelo CNN definitivo maximizado en rendimiento
+    Compara una arquitectura tipo VGG aplanandola al final,
+    vs
+    GlobalAveragePooling2D, respetando los limites de los filtros
 
     Args:
         X_train: Datos de entrenamiento
@@ -1422,67 +1467,233 @@ def tarea_cnn3(X_train, Y_train, X_test, Y_test):
         X_test: Datos de test
         Y_test: Etiquetas de test
     """
-    print("--- Ejecutando Tarea: CNN3 ---")
+    print("--- Ejecutando Tarea CNN3: Comparacion de arquitecturas ---")
+
+    exit_t = ["Flatten", "GlobalAvg"]
+
+    model_names = []
+    accuracy_results = []
+    time_results = []
+
+    for t in exit_t:
+        print("\nEntrenamiento con", t)
+
+        model = keras.Sequential()
+
+        model.add(keras.Input(shape=X_train[0].shape))
+
+        # Max 32 filtros antes del primer pool
+        # padding same para mantener el tamaño espacial
+        model.add(
+            layers.Conv2D(
+                32,
+                (3, 3),
+                activation="relu",
+                kernel_initializer="he_normal",
+                padding="same",
+            )
+        )
+        model.add(
+            layers.Conv2D(
+                32,
+                (3, 3),
+                activation="relu",
+                kernel_initializer="he_normal",
+                padding="same",
+            )
+        )
+        model.add(layers.MaxPooling2D((2, 2)))
+
+        model.add(
+            layers.Conv2D(
+                64,
+                (3, 3),
+                activation="relu",
+                kernel_initializer="he_normal",
+                padding="same",
+            )
+        )
+        model.add(
+            layers.Conv2D(
+                64,
+                (3, 3),
+                activation="relu",
+                kernel_initializer="he_normal",
+                padding="same",
+            )
+        )
+        model.add(layers.MaxPooling2D((2, 2)))
+
+        model.add(
+            layers.Conv2D(
+                128,
+                (3, 3),
+                activation="relu",
+                kernel_initializer="he_normal",
+                padding="same",
+            )
+        )
+        model.add(
+            layers.Conv2D(
+                128,
+                (3, 3),
+                activation="relu",
+                kernel_initializer="he_normal",
+                padding="same",
+            )
+        )
+
+        if t == "Flatten":
+            model.add(layers.MaxPooling2D((2, 2)))
+            model.add(layers.Flatten())
+            model.add(
+                layers.Dense(256, activation="relu", kernel_initializer="he_normal")
+            )
+        else:
+            model.add(layers.GlobalAveragePooling2D())
+            model.add(
+                layers.Dense(256, activation="relu", kernel_initializer="he_normal")
+            )
+
+        model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+
+        model.compile(
+            optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+        )
+
+        early_stopping = callbacks.EarlyStopping(
+            monitor="val_loss", patience=10, restore_best_weights=True, verbose=1
+        )
+
+        start_time = time.time()
+        model.fit(
+            X_train,
+            Y_train,
+            epochs=50,
+            batch_size=32,
+            validation_split=0.1,
+            callbacks=[early_stopping],
+            verbose=1,
+        )
+        end_time = time.time()
+        training_time = end_time - start_time
+
+        _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+
+        model_names.append(t)
+        accuracy_results.append(test_accuracy)
+        time_results.append(training_time)
+
+        print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
+
+    Y_pred = model.predict(X_test)
+    show_confusion_matriz(Y_test, Y_pred, CLASS_NAMES, "Matriz de Confusión")
+
+    show_models_comparations(
+        model_names,
+        accuracy_results,
+        time_results,
+        "Comparacion de modelos por arquitectura de salida",
+    )
+
+### Tarea CNN3: Modelo CNN definitivo ~85%
+def tarea_cnn3_max(X_train, Y_train, X_test, Y_test):
+    """
+    Modelo CNN definitivo
+
+    Args:
+        X_train: Datos de entrenamiento
+        Y_train: Etiquetas de entrenamiento
+        X_test: Datos de test
+        Y_test: Etiquetas de test
+    """
+
+    data_augmentation = keras.Sequential(
+        [
+            layers.RandomFlip("horizontal"),
+            layers.RandomRotation(0.1),
+            layers.RandomZoom(0.1),
+            layers.RandomTranslation(0.1, 0.1),
+        ]
+    )
 
     model = keras.Sequential()
+    model.add(keras.Input(shape=X_train.shape[1:]))
+    model.add(data_augmentation)
 
-    # Capa de entrada CNN
-    model.add(
-        layers.Conv2D(
-            32,
-            (3, 3),
-            activation="relu",
-            kernel_initializer="he_normal",
-            input_shape=X_train[0].shape,
-        )
-    )
+    # BLOQUE 1
+    model.add(layers.Conv2D(32, (3, 3), padding="same", kernel_initializer="he_normal"))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
 
-    # Capa oculta CNN
-    model.add(
-        layers.Conv2D(32, (3, 3), activation="relu", kernel_initializer="he_normal")
-    )
+    model.add(layers.Conv2D(32, (3, 3), padding="same", kernel_initializer="he_normal"))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
 
     model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.2))
 
-    # Capa oculta CNN
-    # model.add(
-    #     layers.Conv2D(64, (3, 3), activation="relu", kernel_initializer="he_normal")
-    # )
-    # # Capa oculta CNN
-    # model.add(
-    #     layers.Conv2D(64, (3, 3), activation="relu", kernel_initializer="he_normal")
-    # )
+    # BLOQUE 2
+    model.add(layers.Conv2D(128, (3, 3), padding="same", kernel_initializer="he_normal"))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
 
-    # model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(128, (3, 3), padding="same", kernel_initializer="he_normal"))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
 
-    # # Capa oculta CNN
-    # model.add(
-    #     layers.Conv2D(128, (3, 3), activation="relu", kernel_initializer="he_normal")
-    # )
-    # # Capa oculta CNN
-    # model.add(
-    #     layers.Conv2D(128, (3, 3), activation="relu", kernel_initializer="he_normal")
-    # )
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.3))
 
-    # model.add(layers.MaxPooling2D((2, 2)))
+    # BLOQUE 3
+    model.add(
+        layers.Conv2D(128, (3, 3), padding="same", kernel_initializer="he_normal")
+    )
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
 
-    # Aplana
-    model.add(layers.Flatten())
+    model.add(
+        layers.Conv2D(128, (3, 3), padding="same", kernel_initializer="he_normal")
+    )
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
 
-    # Capa oculta
-    model.add(layers.Dense(100, activation="relu", kernel_initializer="he_normal"))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.3))
 
-    # Capa de salida
-    model.add(layers.Dense(len(CLASS_NAMES), activation="softmax"))
+    model.add(layers.GlobalAveragePooling2D())
+
+    # Capa Densa final
+    model.add(layers.Dense(128, kernel_initializer="he_normal"))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Activation("gelu"))
+    model.add(layers.Dropout(0.1))
+
+    # Salida
+    model.add(layers.Dense(10, activation="softmax"))
+
+    # AdamW + CosineDecay
+    lr_fn = keras.optimizers.schedules.CosineDecay(
+        initial_learning_rate=0.001,
+        decay_steps=80 * (len(X_train) // 128),  # Pasos totales
+        alpha=0.0,
+    )
+
+    optimizer = keras.optimizers.AdamW(
+        learning_rate=lr_fn, weight_decay=1e-5
+    )
 
     model.compile(
-        optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
+        optimizer=optimizer,
+        #loss=keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
     )
 
     early_stopping = callbacks.EarlyStopping(
         monitor="val_loss",
-        mode="min",
-        min_delta=0.001,
         patience=10,
         restore_best_weights=True,
         verbose=1,
@@ -1492,24 +1703,27 @@ def tarea_cnn3(X_train, Y_train, X_test, Y_test):
     history = model.fit(
         X_train,
         Y_train,
-        epochs=100,
-        batch_size=32,  # por defecto
-        validation_split=0.1,
+        epochs=80,
+        batch_size=128,
+        validation_data=(X_test, Y_test),
         callbacks=[early_stopping],
         verbose=1,
     )
     end_time = time.time()
     training_time = end_time - start_time
 
-    loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=1)
+    _, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
 
-    print(f"\n--- Resultado CNN1 ---")
-    print(f"Precision: {test_accuracy*100:.2f}%")
-    print(f"Perdida: {loss:.4f}")
-    print(f"Tiempo: {training_time:.2f}s")
-    print(f"Epocas: {len(history.history['loss'])}")
+    print(
+            f"Resultado: Accuracy = {test_accuracy*100:.2f}%, Tiempo = {training_time:.2f}s"
+        )
 
-    show_train_evolution(history, "Evolucion del entrenamiento con CNN1")
+    Y_pred = model.predict(X_test)
+    show_confusion_matriz(
+        Y_test, Y_pred, CLASS_NAMES, "Matriz de Confusion - CNN Final (Opción 2)"
+    )
+
+    show_train_evolution(history, "Evolucion CNN Max")
 
 
 
@@ -1567,5 +1781,8 @@ if __name__ == "__main__":
     ### Tarea CNN2: Ajustar el kernel_size
     # tarea_cnn2(X_train, Y_train, X_test, Y_test)
 
+    ### Tarea CNN3: Modelo CNN comparacion de arquitecturas
+    # tarea_cnn3_compare_arch(X_train, Y_train, X_test, Y_test)
+
     ### Tarea CNN3: Modelo CNN definitivo
-    tarea_cnn3(X_train, Y_train, X_test, Y_test)
+    tarea_cnn3_max(X_train, Y_train, X_test, Y_test)
